@@ -406,9 +406,26 @@
               </button>
             </div>
 
-            <div id="familyAudioPreview" class="hidden mt-2 text-center">
-              <p class="text-[10px] text-forest-800 font-bold mb-1" id="familyAudioPreviewLabel">Voice ready for cloning:</p>
-              <audio id="familyAudioPlayer" controls class="h-8 max-w-xs mx-auto"></audio>
+            <div id="familyAudioPreview" class="hidden mt-3 w-full bg-forest-50/80 border border-emerald-200/90 rounded-2xl p-3 shadow-sm">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs text-forest-950 font-bold flex items-center space-x-1.5 truncate">
+                  <span>🎧</span>
+                  <span id="familyAudioPreviewLabel" class="truncate">Voice ready for cloning</span>
+                </span>
+                <span id="familyAudioDurationBadge" class="text-[10px] bg-emerald-100 text-forest-900 font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-200 flex-shrink-0">0:00 / 0:00</span>
+              </div>
+              
+              <div class="flex items-center space-x-3">
+                <button type="button" id="btnPlayFamilyPreview" class="w-9 h-9 rounded-xl bg-forest-800 hover:bg-forest-900 text-white flex items-center justify-center text-sm shadow-sm transition active:scale-95 flex-shrink-0">
+                  ▶
+                </button>
+                <div class="flex-1">
+                  <div id="familyAudioProgressBarBg" class="w-full bg-emerald-200/60 rounded-full h-2.5 cursor-pointer relative overflow-hidden">
+                    <div id="familyAudioProgressBar" class="bg-forest-700 h-2.5 rounded-full w-0 transition-all duration-75"></div>
+                  </div>
+                </div>
+              </div>
+              <audio id="familyAudioPlayer" class="hidden"></audio>
             </div>
           </div>
 

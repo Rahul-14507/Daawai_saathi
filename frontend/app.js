@@ -635,6 +635,82 @@ function initFamilyVoiceControls() {
   const timerFamily = document.getElementById("familyRecordingTimer");
   const previewDiv = document.getElementById("familyAudioPreview");
   const player = document.getElementById("familyAudioPlayer");
+  const btnPlayPreview = document.getElementById("btnPlayFamilyPreview");
+  const durationBadge = document.getElementById("familyAudioDurationBadge");
+  const progressBar = document.getElementById("familyAudioProgressBar");
+  const progressBarBg = document.getElementById("familyAudioProgressBarBg");
+
+  let previewDuration = 0;
+
+  function setupPreviewAudio(blob, durationHint = null, labelText = null) {
+    state.familyRecordedBlob = blob;
+    previewDiv.classList.remove("hidden");
+    if (labelText) {
+      const label = document.getElementById("familyAudioPreviewLabel");
+      if (label) label.textContent = labelText;
+    }
+
+    // Determine accurate duration (bypasses Chromium WebM duration bug)
+    if (durationHint && durationHint > 0) {
+      previewDuration = Math.round(durationHint);
+    } else if (state.recordingSecondsFamily && state.recordingSecondsFamily > 0) {
+      previewDuration = state.recordingSecondsFamily;
+    } else {
+      previewDuration = 10;
+    }
+
+    if (durationBadge) durationBadge.textContent = `0:00 / ${formatTime(previewDuration)}`;
+    if (progressBar) progressBar.style.width = "0%";
+    if (btnPlayPreview) btnPlayPreview.textContent = "▶";
+
+    player.src = URL.createObjectURL(blob);
+    player.load();
+
+    // If browser reports a valid finite duration, refine it
+    player.onloadedmetadata = () => {
+      if (Number.isFinite(player.duration) && player.duration > 0 && player.duration < 600) {
+        previewDuration = Math.round(player.duration);
+        if (durationBadge) durationBadge.textContent = `0:00 / ${formatTime(previewDuration)}`;
+      }
+    };
+  }
+
+  if (btnPlayPreview) {
+    btnPlayPreview.addEventListener("click", () => {
+      if (!player.src) return;
+      if (player.paused) {
+        player.play().catch(() => {});
+        btnPlayPreview.textContent = "⏸";
+      } else {
+        player.pause();
+        btnPlayPreview.textContent = "▶";
+      }
+    });
+  }
+
+  player.addEventListener("timeupdate", () => {
+    const cur = Math.min(player.currentTime, previewDuration);
+    if (durationBadge) durationBadge.textContent = `${formatTime(cur)} / ${formatTime(previewDuration)}`;
+    const pct = previewDuration > 0 ? (cur / previewDuration) * 100 : 0;
+    if (progressBar) progressBar.style.width = `${Math.min(100, pct)}%`;
+  });
+
+  player.addEventListener("ended", () => {
+    if (btnPlayPreview) btnPlayPreview.textContent = "▶";
+    if (progressBar) progressBar.style.width = "0%";
+    if (durationBadge) durationBadge.textContent = `0:00 / ${formatTime(previewDuration)}`;
+  });
+
+  if (progressBarBg) {
+    progressBarBg.addEventListener("click", (e) => {
+      if (!previewDuration || previewDuration <= 0) return;
+      const rect = progressBarBg.getBoundingClientRect();
+      const pos = (e.clientX - rect.left) / rect.width;
+      const seekTo = Math.max(0, Math.min(pos * previewDuration, previewDuration));
+      player.currentTime = seekTo;
+      if (progressBar) progressBar.style.width = `${pos * 100}%`;
+    });
+  }
 
   btnFamilyMic.addEventListener("click", async () => {
     if (!state.isRecordingFamily) {
@@ -649,16 +725,16 @@ function initFamilyVoiceControls() {
 
         state.mediaRecorderFamily.onstop = () => {
           stream.getTracks().forEach((track) => track.stop());
+          const recordedSecs = state.recordingSecondsFamily > 0 ? state.recordingSecondsFamily : 7;
           state.familyRecordedBlob = new Blob(state.audioChunksFamily, { type: "audio/webm" });
-          previewDiv.classList.remove("hidden");
-          player.src = URL.createObjectURL(state.familyRecordedBlob);
+          setupPreviewAudio(state.familyRecordedBlob, recordedSecs, "Recorded Voice Ready");
         };
 
         state.mediaRecorderFamily.start();
         state.isRecordingFamily = true;
         familyPulse.classList.remove("hidden");
         familyIcon.textContent = "⏹";
-        btnFamilyMic.classList.replace("bg-purple-600", "bg-red-600");
+        btnFamilyMic.classList.replace("bg-forest-800", "bg-red-600");
 
         state.recordingSecondsFamily = 0;
         state.timerIntervalFamily = setInterval(() => {
@@ -673,7 +749,7 @@ function initFamilyVoiceControls() {
       clearInterval(state.timerIntervalFamily);
       familyPulse.classList.add("hidden");
       familyIcon.textContent = "🎙️";
-      btnFamilyMic.classList.replace("bg-red-600", "bg-purple-600");
+      btnFamilyMic.classList.replace("bg-red-600", "bg-forest-800");
       state.mediaRecorderFamily.stop();
 
       if (state.recordingSecondsFamily < 5) {
@@ -688,11 +764,7 @@ function initFamilyVoiceControls() {
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
       if (file) {
-        state.familyRecordedBlob = file;
-        previewDiv.classList.remove("hidden");
-        player.src = URL.createObjectURL(file);
-        const label = document.getElementById("familyAudioPreviewLabel");
-        if (label) label.textContent = `Selected file: ${file.name}`;
+        setupPreviewAudio(file, null, `Selected: ${file.name}`);
         document.getElementById("familyRecordingTimer").textContent = "Audio file loaded!";
         showToast(`Loaded voice file: ${file.name}`, "success");
       }
@@ -707,11 +779,7 @@ function initFamilyVoiceControls() {
         const resp = await fetch("/samples/reference_speech.wav");
         if (!resp.ok) throw new Error("Could not fetch sample voice file");
         const blob = await resp.blob();
-        state.familyRecordedBlob = blob;
-        previewDiv.classList.remove("hidden");
-        player.src = URL.createObjectURL(blob);
-        const label = document.getElementById("familyAudioPreviewLabel");
-        if (label) label.textContent = "Pre-loaded Sample Voice (6s clean speech)";
+        setupPreviewAudio(blob, 6, "Sample Voice (6s clean speech)");
         document.getElementById("familyRecordingTimer").textContent = "Sample Voice Loaded (00:06)";
         showToast("Sample voice loaded! Check consent box and save.", "success");
       } catch (e) {
