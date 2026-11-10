@@ -451,7 +451,14 @@ if FRONTEND_DIR.exists():
 
     @app.get("/")
     async def serve_index():
-        return FileResponse(str(FRONTEND_DIR / "index.html"))
+        return FileResponse(
+            str(FRONTEND_DIR / "index.html"),
+            headers={
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
+        )
 
     @app.get("/manifest.json")
     async def serve_manifest():
