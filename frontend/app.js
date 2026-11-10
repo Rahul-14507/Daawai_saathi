@@ -70,6 +70,7 @@ const UI_I18N = {
 document.addEventListener("DOMContentLoaded", () => {
   initLanguage();
   initNavigation();
+  initPWA();
   initScanControls();
   initQnaControls();
   initFamilyVoiceControls();
@@ -145,15 +146,36 @@ function initNavigation() {
     buttons[key].addEventListener("click", () => {
       // Hide all sections
       Object.values(tabs).forEach((sec) => sec.classList.add("hidden"));
-      // Reset button styles
+      
+      // Reset all buttons to inactive state
       Object.values(buttons).forEach((btn) => {
-        btn.classList.remove("text-forest-900", "font-extrabold");
-        btn.classList.add("text-slate-400", "font-semibold");
+        btn.classList.remove("active-tab");
+        const pill = btn.querySelector(".nav-pill");
+        if (pill) {
+          pill.classList.remove("bg-emerald-100", "text-forest-900");
+          pill.classList.add("text-slate-400");
+        }
+        const label = btn.querySelector(".nav-label");
+        if (label) {
+          label.classList.remove("text-forest-900", "font-bold");
+          label.classList.add("text-slate-500", "font-medium");
+        }
       });
-      // Show selected section
+
+      // Activate clicked tab
       tabs[key].classList.remove("hidden");
-      buttons[key].classList.remove("text-slate-400", "font-semibold");
-      buttons[key].classList.add("text-forest-900", "font-extrabold");
+      buttons[key].classList.add("active-tab");
+      const activePill = buttons[key].querySelector(".nav-pill");
+      if (activePill) {
+        activePill.classList.remove("text-slate-400");
+        activePill.classList.add("bg-emerald-100", "text-forest-900");
+      }
+      const activeLabel = buttons[key].querySelector(".nav-label");
+      if (activeLabel) {
+        activeLabel.classList.remove("text-slate-500", "font-medium");
+        activeLabel.classList.add("text-forest-900", "font-bold");
+      }
+      window.scrollTo({ top: 0, behavior: "smooth" });
     });
   });
 
@@ -161,6 +183,68 @@ function initNavigation() {
   document.getElementById("btnGoToReminders").addEventListener("click", () => {
     buttons.tabFamily.click();
     document.getElementById("subTabDashboard").click();
+  });
+}
+
+// ==========================================
+// Progressive Web App (PWA) Handler
+// ==========================================
+function initPWA() {
+  // Register Service Worker
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker
+        .register("/sw.js", { scope: "/" })
+        .then((reg) => console.log("PWA Service Worker registered:", reg.scope))
+        .catch((err) => console.warn("PWA Service Worker registration error:", err));
+    });
+  }
+
+  let deferredPrompt = null;
+  const installBtn = document.getElementById("btnInstallPWA");
+
+  // Chrome / Android Install Prompt Event
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) {
+      installBtn.classList.remove("hidden");
+      installBtn.classList.add("flex");
+    }
+  });
+
+  if (installBtn) {
+    // Check if app is not already running standalone
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+    if (!isStandalone) {
+      installBtn.classList.remove("hidden");
+      installBtn.classList.add("flex");
+    }
+
+    installBtn.addEventListener("click", async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === "accepted") {
+          installBtn.classList.add("hidden");
+          deferredPrompt = null;
+          showToast("Installing Dawai Saathi to your device...", "success");
+        }
+      } else {
+        // Helpful contextual instructions for iOS vs Android
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if (isIOS) {
+          showToast("To install on iOS: Tap Share (⬆️) and select 'Add to Home Screen'", "info");
+        } else {
+          showToast("To install: Tap browser menu (⋮) -> 'Install App' or 'Add to Home Screen'", "info");
+        }
+      }
+    });
+  }
+
+  window.addEventListener("appinstalled", () => {
+    if (installBtn) installBtn.classList.add("hidden");
+    showToast("🎉 Dawai Saathi installed! Tap icon on home screen to use.", "success");
   });
 }
 

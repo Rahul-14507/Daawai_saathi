@@ -452,3 +452,35 @@ if FRONTEND_DIR.exists():
     @app.get("/")
     async def serve_index():
         return FileResponse(str(FRONTEND_DIR / "index.html"))
+
+    @app.get("/manifest.json")
+    async def serve_manifest():
+        return FileResponse(
+            str(FRONTEND_DIR / "manifest.json"),
+            media_type="application/manifest+json"
+        )
+
+    @app.get("/sw.js")
+    async def serve_sw():
+        return FileResponse(
+            str(FRONTEND_DIR / "sw.js"),
+            media_type="application/javascript",
+            headers={"Service-Worker-Allowed": "/"}
+        )
+
+    @app.get("/icon-192.png")
+    async def serve_icon_192():
+        return FileResponse(str(FRONTEND_DIR / "icon-192.png"), media_type="image/png")
+
+    @app.get("/icon-512.png")
+    async def serve_icon_512():
+        return FileResponse(str(FRONTEND_DIR / "icon-512.png"), media_type="image/png")
+
+    @app.get("/apple-touch-icon.png")
+    async def serve_apple_touch_icon():
+        return FileResponse(str(FRONTEND_DIR / "apple-touch-icon.png"), media_type="image/png")
+
+    @app.get("/favicon.png")
+    @app.get("/favicon.ico")
+    async def serve_favicon():
+        return FileResponse(str(FRONTEND_DIR / "favicon.png"), media_type="image/png")

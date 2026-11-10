@@ -123,7 +123,24 @@ button:active, .touch-btn:active {
   background-color: #1EBE5D;
 }
 
-/* Mobile Bottom Navigation Bar */
+/* Mobile Bottom Navigation Bar & Safe Area */
 .bottom-nav-safe {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  padding-bottom: calc(env(safe-area-inset-bottom, 10px) + 0.35rem);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.nav-pill {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-tab:active {
+  transform: scale(0.92);
+}
+
+/* Standalone PWA adjustments */
+@media all and (display-mode: standalone) {
+  #btnInstallPWA {
+    display: none !important;
+  }
 }

@@ -165,7 +165,7 @@ def tts_cloned(text: str, embedding: Dict[str, Any], lang: str = "hi-IN", with_t
         return generate_fallback_chime("empty")
 
     emb_repr = embedding.get("embedding", "")[:24]
-    cache_fn = get_cache_filename(text, f"cloned_{emb_repr}", lang)
+    cache_fn = get_cache_filename(text, f"cloned_v2_{emb_repr}", lang)
     cached = get_cached_audio(cache_fn)
     if cached and len(cached) > 175000:
         logger.info(f"TTS Cloned Cache Hit: {cache_fn}")
@@ -216,24 +216,25 @@ def tts_cloned(text: str, embedding: Dict[str, Any], lang: str = "hi-IN", with_t
         logger.warning("Cloned voice synthesis failed, falling back to regional stock voice.")
         cloned_audio_raw = tts_stock(text, lang)
 
-    # Attach mandatory spoken safety tag: "This is an AI-generated reminder."
+    # Attach mandatory spoken safety tag (shortened and appended at end): "AI Reminder."
     if with_tag:
         try:
             tag_text = {
-                "te-IN": "ఇది ఏఐ ద్వారా రూపొందించబడిన రిమైండర్.",
-                "hi-IN": "यह एआई द्वारा निर्मित रिमाइंड वाला संदेश है।",
-                "ta-IN": "இது ஏஐ உருவாக்கிய நினைவூட்டல் செய்தி.",
-                "kn-IN": "ಇದು ಎಐ ನಿಂದ ರಚಿಸಲಾದ ಜ್ಞಾಪನೆ ಸಂದೇಶ.",
-                "bn-IN": "এটি একটি এআই নির্মিত অনুস্মারক বার্তা।",
-                "mr-IN": "हा एआय ने तयार केलेला रिमाइंड मेसेज आहे.",
-                "gu-IN": "આ એઆઇ દ્વારા જનરેટ થયેલ રિમાઇન્ડર છે.",
-                "ml-IN": "ഇത് എഐ തയ്യാറാക്കിയ റിമൈൻഡർ സന്ദേശമാണ്.",
-                "pa-IN": "ਇਹ ਏਆਈ ਦੁਆਰਾ ਬਣਾਇਆ ਗਿਆ ਰੀਮਾਈਂਡਰ ਸੁਨੇਹਾ ਹੈ।",
-                "en-IN": "This is an AI-generated reminder."
-            }.get(lang, "This is an AI-generated reminder.")
+                "te-IN": "ఏఐ రిమైండర్.",
+                "hi-IN": "एआई रिमाइंडर।",
+                "ta-IN": "ஏஐ நினைவூட்டல்.",
+                "kn-IN": "ಎಐ ಜ್ಞಾಪನೆ.",
+                "bn-IN": "এআই রিমাইন্ডার।",
+                "mr-IN": "एआय रिमाइंडर.",
+                "gu-IN": "એઆઈ રિમાઇન્ડર.",
+                "ml-IN": "എഐ റിമൈൻഡർ.",
+                "pa-IN": "ਏਆਈ ਰੀਮਾਈਂਡਰ।",
+                "en-IN": "AI Reminder."
+            }.get(lang, "AI Reminder.")
             
             tag_audio = tts_stock(tag_text, lang)
-            final_audio = concatenate_wavs([tag_audio, cloned_audio_raw])
+            # Appended at the end of the cloned reminder
+            final_audio = concatenate_wavs([cloned_audio_raw, tag_audio])
         except Exception as e:
             logger.error(f"Error attaching disclaimer tag: {e}")
             final_audio = cloned_audio_raw
