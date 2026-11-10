@@ -126,7 +126,7 @@ function updateLanguageTexts() {
 }
 
 // ==========================================
-// Top Navigation Tabs
+// Bottom Navigation Tabs
 // ==========================================
 function initNavigation() {
   const tabs = {
@@ -147,13 +147,13 @@ function initNavigation() {
       Object.values(tabs).forEach((sec) => sec.classList.add("hidden"));
       // Reset button styles
       Object.values(buttons).forEach((btn) => {
-        btn.classList.remove("border-white", "text-white");
-        btn.classList.add("border-transparent", "text-brand-200");
+        btn.classList.remove("text-forest-900", "font-extrabold");
+        btn.classList.add("text-slate-400", "font-semibold");
       });
       // Show selected section
       tabs[key].classList.remove("hidden");
-      buttons[key].classList.remove("border-transparent", "text-brand-200");
-      buttons[key].classList.add("border-white", "text-white");
+      buttons[key].classList.remove("text-slate-400", "font-semibold");
+      buttons[key].classList.add("text-forest-900", "font-extrabold");
     });
   });
 
@@ -314,34 +314,34 @@ function renderPrescription(res) {
 
   meds.forEach((m) => {
     const card = document.createElement("div");
-    card.className = "bg-white rounded-2xl border border-slate-200 p-4 shadow-sm hover:shadow transition space-y-2";
+    card.className = "med-card p-4 space-y-2.5";
 
     // Timing Badges
     const timingBadges = (m.timing || ["morning"])
       .map((t) => {
-        if (t === "morning") return `<span class="timing-pill timing-morning">🌅 Morning</span>`;
-        if (t === "afternoon") return `<span class="timing-pill timing-afternoon">☀️ Afternoon</span>`;
-        if (t === "night") return `<span class="timing-pill timing-night">🌙 Night</span>`;
-        return `<span class="timing-pill bg-slate-100 text-slate-700">${t}</span>`;
+        if (t === "morning") return `<span class="slot-badge-morning text-[11px] font-bold px-2.5 py-1 rounded-lg">🌅 Morning</span>`;
+        if (t === "afternoon") return `<span class="slot-badge-afternoon text-[11px] font-bold px-2.5 py-1 rounded-lg">☀️ Afternoon</span>`;
+        if (t === "night") return `<span class="slot-badge-night text-[11px] font-bold px-2.5 py-1 rounded-lg">🌙 Night</span>`;
+        return `<span class="bg-slate-100 text-slate-700 text-[11px] font-bold px-2 py-0.5 rounded-lg">${t}</span>`;
       })
       .join(" ");
 
     // Food relation badge
-    const foodClass = m.with_food === "before" ? "bg-amber-100 text-amber-800" : "bg-teal-100 text-teal-800";
-    const foodText = m.with_food === "before" ? "🍽️ Before Food" : "🍲 After Food";
+    const foodClass = m.with_food === "before" ? "bg-saffron-100 text-saffron-800 border border-saffron-200" : "bg-forest-100 text-forest-800 border border-emerald-200";
+    const foodText = m.with_food === "before" ? "🍽️ Before Food / ఖాళీ కడుపుతో" : "🍲 After Food / భోజనం తర్వాత";
 
     card.innerHTML = `
       <div class="flex items-start justify-between">
         <div>
-          <h4 class="font-bold text-slate-900 text-sm">${m.name} <span class="text-teal-700 font-semibold text-xs">${m.strength}</span></h4>
-          <p class="text-xs text-slate-500">${m.dose} • ${m.frequency_per_day} time(s) a day • For ${m.duration_days} days</p>
+          <h4 class="font-extrabold text-slate-900 text-sm tracking-tight">${m.name} <span class="text-forest-700 font-bold text-xs bg-forest-50 px-2 py-0.5 rounded-md border border-emerald-200 ml-1">${m.strength}</span></h4>
+          <p class="text-xs text-slate-500 font-medium mt-1">💊 ${m.dose} • ${m.frequency_per_day} dose(s) daily • <span class="text-forest-800 font-semibold">For ${m.duration_days} days</span></p>
         </div>
-        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${foodClass}">${foodText}</span>
+        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${foodClass}">${foodText}</span>
       </div>
-      <div class="flex items-center space-x-1.5 pt-1">
+      <div class="flex items-center space-x-2 pt-1">
         ${timingBadges}
       </div>
-      ${m.purpose_plain ? `<p class="text-xs text-slate-600 bg-slate-50 rounded-lg p-2 border border-slate-100">💡 <em>${m.purpose_plain}</em></p>` : ""}
+      ${m.purpose_plain ? `<p class="text-xs text-slate-600 bg-slate-50 rounded-xl p-2.5 border border-slate-200/60 leading-relaxed">💡 <em>${m.purpose_plain}</em></p>` : ""}
     `;
     medList.appendChild(card);
   });
@@ -530,15 +530,15 @@ function initFamilyVoiceControls() {
   const panelDash = document.getElementById("panelDashboard");
 
   subEnroll.addEventListener("click", () => {
-    subEnroll.className = "py-2 px-4 border-b-2 border-purple-600 text-purple-700";
-    subDash.className = "py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-purple-600";
+    subEnroll.className = "flex-1 py-2 text-center rounded-lg bg-white text-forest-900 shadow-sm transition font-bold";
+    subDash.className = "flex-1 py-2 text-center rounded-lg text-slate-500 hover:text-forest-900 transition font-semibold";
     panelEnroll.classList.remove("hidden");
     panelDash.classList.add("hidden");
   });
 
   subDash.addEventListener("click", () => {
-    subDash.className = "py-2 px-4 border-b-2 border-purple-600 text-purple-700";
-    subEnroll.className = "py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-purple-600";
+    subDash.className = "flex-1 py-2 text-center rounded-lg bg-white text-forest-900 shadow-sm transition font-bold";
+    subEnroll.className = "flex-1 py-2 text-center rounded-lg text-slate-500 hover:text-forest-900 transition font-semibold";
     panelDash.classList.remove("hidden");
     panelEnroll.classList.add("hidden");
     loadRemindersDashboard();
@@ -895,49 +895,52 @@ function renderRemindersDashboard(reminders) {
       const waUrl = `https://wa.me/?text=${waText}`;
 
       return `
-      <div class="bg-white rounded-2xl border ${
-        isTaken ? "border-green-300 bg-green-50/50" : "border-slate-200"
-      } p-4 shadow-sm transition space-y-3">
+      <div class="med-card ${
+        isTaken ? "bg-emerald-50/40 border-emerald-300" : "bg-white"
+      } p-4 space-y-3">
         <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-2">
-            <span class="text-xl">${slotIcon}</span>
+          <div class="flex items-center space-x-2.5">
+            <span class="text-2xl">${slotIcon}</span>
             <div>
-              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-800">${r.slot} Dose</h4>
-              <p class="text-xs text-slate-600 font-semibold">${r.medicine_name}</p>
+              <h4 class="font-extrabold text-xs uppercase tracking-wider text-slate-800">${r.slot} Dose</h4>
+              <p class="text-xs text-slate-600 font-bold">${r.medicine_name}</p>
             </div>
           </div>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            isTaken ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
+          <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${
+            isTaken ? "bg-emerald-100 text-forest-800 border border-emerald-300" : "bg-saffron-100 text-saffron-800 border border-saffron-200"
           }">
-            ${isTaken ? "✓ Taken" : "Pending"}
+            ${isTaken ? "✓ Marked Taken" : "Pending"}
           </span>
         </div>
 
-        <p class="text-xs text-slate-700 italic bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+        <p class="text-xs text-slate-800 italic bg-slate-50 p-3 rounded-xl border border-slate-200/70 leading-relaxed font-medium">
           "${r.script_text}"
         </p>
 
         <!-- Actions: Play Voice, Mark Taken, WhatsApp -->
         <div class="flex items-center justify-between pt-1 text-xs">
           <div class="flex items-center space-x-2">
-            <button onclick="playReminderAudio('${r.audio_url}', this)" class="w-9 h-9 bg-teal-600 hover:bg-teal-700 text-white rounded-full flex items-center justify-center font-bold shadow text-xs transition">
+            <button onclick="playReminderAudio('${r.audio_url}', this)" class="w-10 h-10 bg-forest-800 hover:bg-forest-900 text-white rounded-full flex items-center justify-center font-bold shadow text-xs transition active:scale-95 flex-shrink-0">
               ▶
             </button>
-            <span class="text-[11px] font-semibold text-teal-800">Cloned Voice</span>
+            <div class="flex flex-col">
+              <span class="text-[11px] font-extrabold text-forest-900">${r.voice_label || "Cloned Voice"}</span>
+              <span class="text-[9px] text-slate-400 font-semibold">Gnani Voice Cloning</span>
+            </div>
           </div>
 
           <div class="flex items-center space-x-2">
             <!-- Mark Taken Toggle -->
-            <button onclick="toggleTaken('${r.id}')" class="px-3 py-1.5 rounded-lg font-bold text-xs border ${
-              isTaken ? "bg-green-600 text-white border-green-600" : "bg-white text-slate-700 border-slate-300"
+            <button onclick="toggleTaken('${r.id}')" class="px-3 py-2 rounded-xl font-bold text-xs border ${
+              isTaken ? "bg-forest-800 text-white border-forest-800 shadow-sm" : "bg-white text-slate-700 border-slate-300 hover:border-forest-600"
             } transition">
-              ${isTaken ? "✓ Marked Taken" : "Mark Taken"}
+              ${isTaken ? "✓ Taken" : "Mark Taken"}
             </button>
 
             <!-- Share WhatsApp Button -->
-            <a href="${waUrl}" target="_blank" rel="noopener" class="p-1.5 text-green-600 hover:text-green-700 font-bold bg-green-50 border border-green-200 rounded-lg flex items-center space-x-1" title="Share reminder on WhatsApp">
+            <a href="${waUrl}" target="_blank" rel="noopener" class="btn-whatsapp px-3 py-2 rounded-xl font-extrabold text-xs flex items-center space-x-1.5 shadow-sm active:scale-95" title="Share reminder on WhatsApp">
               <span>💬</span>
-              <span class="text-[11px]">WhatsApp</span>
+              <span>WhatsApp</span>
             </a>
           </div>
         </div>
@@ -951,6 +954,11 @@ function renderRemindersDashboard(reminders) {
 let currentActiveAudio = null;
 window.playReminderAudio = function (url, btnEl) {
   if (currentActiveAudio) {
+    if (!currentActiveAudio.paused && currentActiveAudio.src.includes(url)) {
+      currentActiveAudio.pause();
+      btnEl.textContent = "▶";
+      return;
+    }
     currentActiveAudio.pause();
     currentActiveAudio = null;
   }
