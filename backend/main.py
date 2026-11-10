@@ -317,10 +317,20 @@ async def generate_approved_reminders(req: GenerateRemindersRequest):
 
     rx_lang = rx.get("language", "te-IN")
     
-    # Retrieve family voice if requested
+    # Retrieve family voice if requested, or fallback to latest enrolled family voice
     family_voice = None
     if req.voice_id:
         family_voice = db.get_family_voice(req.voice_id)
+    if not family_voice:
+        voices = db.list_family_voices()
+        if voices:
+            family_voice = db.get_family_voice(voices[0]["id"])
+
+    # Clear previous reminders for this prescription so fresh ones take effect
+    conn = db.get_connection()
+    with conn:
+        conn.execute("DELETE FROM reminders WHERE prescription_id = ?", (req.prescription_id,))
+    conn.close()
 
     # Determine scripts to synthesize
     scripts_to_voice = []

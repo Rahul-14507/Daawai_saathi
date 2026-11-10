@@ -25,9 +25,9 @@ GNANI_BASE_URL = os.getenv("GNANI_BASE_URL", "https://api.vachana.ai").rstrip("/
 GNANI_API_KEY = os.getenv("GNANI_API_KEY", "").strip()
 
 # LLM Config
-LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini").lower()
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "mock").lower()
 LLM_API_KEY = os.getenv("LLM_API_KEY", "").strip()
-LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.5-flash" if LLM_PROVIDER == "gemini" else "claude-3-5-sonnet-20241022")
+LLM_MODEL = os.getenv("LLM_MODEL", "gemini-3.8-flash")
 
 # Server Config
 HOST = os.getenv("HOST", "0.0.0.0")
@@ -85,3 +85,4 @@ STOCK_VOICES = {
 }
 
 FALLBACK_VOICE = {"model": "timbre-v3.0", "voice": "Chetana"}
+

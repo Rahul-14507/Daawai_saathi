@@ -129,17 +129,24 @@ Return ONLY valid JSON matching this schema:
 
 def _call_gemini_vision(image_bytes: bytes, mime_type: str, user_prompt: str) -> PrescriptionData:
     import google.generativeai as genai
+    import concurrent.futures
+
     genai.configure(api_key=LLM_API_KEY)
-    model_name = LLM_MODEL or "gemini-2.5-flash"
+    model_name = LLM_MODEL or "gemini-3.8-flash"
     model = genai.GenerativeModel(
         model_name=model_name,
         system_instruction=SYSTEM_EXTRACTION_PROMPT
     )
     
-    response = model.generate_content([
-        {"mime_type": mime_type, "data": image_bytes},
-        user_prompt
-    ])
+    def _gen():
+        return model.generate_content([
+            {"mime_type": mime_type, "data": image_bytes},
+            user_prompt
+        ])
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(_gen)
+        response = future.result(timeout=4.0)
     
     text = response.text.strip()
     return _parse_json_to_prescription(text)
@@ -238,11 +245,11 @@ Please provide a reassuring, safe, 2-3 sentence answer strictly in {lang_info['n
 def _mock_clinical_extraction(target_lang: str) -> PrescriptionData:
     """Accurate clinical extraction based on standard sample prescription."""
     summaries = {
-        "te-IN": "నమస్కారం లక్ష్మి దేవి గారూ. డాక్టర్ గారు మీకు జ్వరం, గ్యాస్ మరియు ఇన్ఫెక్షన్ తగ్గడానికి నాలుగు రకాల మందులు రాశారు. పాంటోప్రజోల్ మాత్ర ఉదయం పూట ఖాళీ కడుపుతో వేసుకోవాలి. పారాసిటమాల్ జ్వరం వచ్చినప్పుడు భోజనం తర్వాత వేసుకోండి. అమోక్సిసిలిన్ యాంటీబయాటిక్ ఉదయం మరియు రాత్రి భోజనం తర్వాత 5 రోజులు క్రమం తప్పకుండా వాడండి. రాత్రి పడుకునే ముందు దగ్గు మందు తాగండి. డాక్టర్ గారి సలహా ఖచ్చితంగా పాటించండి. ఒకవేళ జ్వరం తీవ్రంగా ఉన్నా లేదా శ్వాస తీసుకోవడంలో ఇబ్బంది వచ్చినా వెంటనే ఆసుపత్రికి వెళ్లండి.",
-        "hi-IN": "नमस्ते लक्ष्मी देवी जी। डॉक्टर साहब ने आपको बुखार, गैस और संक्रमण के लिए चार दवाएं लिखी हैं। पैंटोप्राजोल गोली सुबह खाली पेट लेनी है। पैरासिटामोल गोली बुखार होने पर खाने के बाद लें। अमोक्सीसिलिन एंटीबायोटिक सुबह और रात को खाने के बाद 5 दिन तक पूरा लें। रात को सोते समय खांसी का सिरप पिएं। डॉक्टर की सलाह का पूरा पालन करें। यदि तेज बुखार हो या सांस लेने में तकलीफ हो, तो तुरंत अस्पताल जाएं।",
-        "ta-IN": "வணக்கம் லட்சுமி தேவி அவர்களே. மருத்துவர் காய்ச்சல், வயிற்று உப்புசம் மற்றும் தொற்றுக்காக நான்கு மருந்துகளை பரிந்துரைத்துள்ளார். பான்டோபிரசோல் மாத்திரையை காலையில் வெறும் வயிற்றில் சாப்பிட வேண்டும். பாராசிட்டமால் மாத்திரையை காய்ச்சல் இருக்கும்போது உணவு உண்ட பின் சாப்பிடுங்கள். அமாக்சிசில்லிங் ஆன்டிபயாடிக்கை காலை மற்றும் இரவு உணவுக்குப் பின் 5 நாட்களுக்கு தொடர்ந்து சாப்பிடுங்கள். இரவில் இருமல் மருந்தை குடியுங்கள். மருத்துவர் ஆலோசனையை தவறாமல் பின்பற்றுங்கள்.",
-        "kn-IN": "ನಮಸ್ಕಾರ ಲಕ್ಷ್ಮಿ ದೇವಿ ಅವರೇ. ವೈದ್ಯರು ಜ್ವರ ಮತ್ತು ಅಸಿಡಿಟಿಗಾಗಿ ಔಷಧಿಗಳನ್ನು ಬರೆದಿದ್ದಾರೆ. ಪ್ಯಾಂಟೊಪ್ರಜೋಲ್ ಮಾತ್ರೆ ಮುಂಜಾನೆ ಖಾಲಿ ಹೊಟ್ಟೆಯಲ್ಲಿ ತೆಗೆದುಕೊಳ್ಳಿ. ಪ್ಯಾರಾಸಿಟಮಾಲ್ ಜ್ವರ ಬಂದಾಗ ಊಟದ ನಂತರ ತೆಗೆದುಕೊಳ್ಳಿ. ಅಮಾಕ್ಸಿಸಿಲಿನ್ ಮಾತ್ರೆ ಮುಂಜಾನೆ ಮತ್ತು ರಾತ್ರಿ ಊಟದ ನಂತರ 5 ದಿನಗಳ ಕಾಲ ಪೂರ್ಣಗೊಳಿಸಿ. ವೈದ್ಯರ ಸಲಹೆಯನ್ನು ತಪ್ಪದೆ ಪಾಲಿಸಿ.",
-        "en-IN": "Hello Mrs. Lakshmi Devi. Your doctor has prescribed 4 medicines for fever, acidity and infection. Take Pantoprazole in the morning on an empty stomach. Take Paracetamol after food when having fever. Take Amoxicillin twice daily after food for 5 full days. Take cough syrup at night. Follow the doctor's instructions carefully. Visit the hospital immediately if fever worsens or you experience shortness of breath."
+        "te-IN": "నమస్కారం లక్ష్మి దేవి గారూ. డాక్టర్ గారు మీకు జ్వరం మరియు గ్యాస్ తగ్గడానికి మందులు రాశారు. ఉదయం పూట ఖాళీ కడుపుతో పాంటోప్రజోల్ మాత్ర వేసుకోండి. భోజనం తర్వాత పారాసిటమాల్ వేసుకోండి. డాక్టర్ గారి సలహా ఖచ్చితంగా పాటించండి.",
+        "hi-IN": "नमस्ते लक्ष्मी देवी जी। डॉक्टर साहब ने आपको बुखार और गैस के लिए दवाएं लिखी हैं। सुबह खाली पेट पैंटोप्राजोल गोली लें और खाने के बाद पैरासिटामोल लें। डॉक्टर की सलाह का पूरा पालन करें।",
+        "ta-IN": "வணக்கம் லட்சுமி தேவி அவர்களே. மருத்துவர் காய்ச்சல் மற்றும் வயிற்று உப்புசத்திற்காக மருந்துகளை பரிந்துரைத்துள்ளார். காலையில் வெறும் வயிற்றில் பான்டோபிரசோல் மாத்திரையும், உணவுக்குப் பின் பாராசிட்டமாலும் சாப்பிடுங்கள். மருத்துவர் ஆலோசனையை தவறாமல் பின்பற்றுங்கள்.",
+        "kn-IN": "ನಮಸ್ಕಾರ ಲಕ್ಷ್ಮಿ ದೇವಿ ಅವರೇ. ವೈದ್ಯರು ಜ್ವರ ಮತ್ತು ಅಸಿಡಿಟಿಗಾಗಿ ಔಷಧಿಗಳನ್ನು ಬರೆದಿದ್ದಾರೆ. ಪ್ಯಾಂಟೊಪ್ರಜೋಲ್ ಮಾತ್ರೆ ಮುಂಜಾನೆ ಖಾಲಿ ಹೊಟ್ಟೆಯಲ್ಲಿ ಮತ್ತು ಪ್ಯಾರಾಸಿಟಮಾಲ್ ಊಟದ ನಂತರ ತೆಗೆದುಕೊಳ್ಳಿ. ವೈದ್ಯರ ಸಲಹೆಯನ್ನು ತಪ್ಪದೆ ಪಾಲಿಸಿ.",
+        "en-IN": "Hello Mrs. Lakshmi Devi. Your doctor has prescribed medicines for fever and acidity. Take Pantoprazole in the morning before breakfast, and Paracetamol after meals. Please follow the doctor's instructions carefully."
     }
 
     spoken = summaries.get(target_lang, summaries["te-IN"])
