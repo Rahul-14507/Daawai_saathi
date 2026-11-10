@@ -130,8 +130,9 @@ Return ONLY valid JSON matching this schema:
 def _call_gemini_vision(image_bytes: bytes, mime_type: str, user_prompt: str) -> PrescriptionData:
     import google.generativeai as genai
     genai.configure(api_key=LLM_API_KEY)
+    model_name = LLM_MODEL or "gemini-2.5-flash"
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-flash",
+        model_name=model_name,
         system_instruction=SYSTEM_EXTRACTION_PROMPT
     )
     
@@ -209,7 +210,8 @@ Please provide a reassuring, safe, 2-3 sentence answer strictly in {lang_info['n
         try:
             import google.generativeai as genai
             genai.configure(api_key=LLM_API_KEY)
-            model = genai.GenerativeModel("gemini-1.5-flash", system_instruction=sys_prompt)
+            model_name = LLM_MODEL or "gemini-2.5-flash"
+            model = genai.GenerativeModel(model_name, system_instruction=sys_prompt)
             resp = model.generate_content(user_prompt)
             return resp.text.strip()
         except Exception as e:
@@ -319,3 +321,4 @@ def _mock_answer_response(question: str, data: dict, lang: str) -> str:
         "hi-IN": "यह जानकारी आपके पर्चे में नहीं लिखी है। कृपया सुरक्षित रहने के लिए अपने डॉक्टर या फार्मासिस्ट से संपर्क करें।",
         "en-IN": "This specific detail is not written on the prescription. Please consult your doctor or pharmacist to be safe."
     }.get(lang, "Please consult your doctor for medical advice not written on the prescription.")
+
