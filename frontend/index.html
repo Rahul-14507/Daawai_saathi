@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dawai Saathi | दवाई साथी | మందుల సహచరి</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#F0FDFA',
+              100: '#CCFBF1',
+              500: '#14B8A6',
+              600: '#0D9488',
+              700: '#0F766E',
+              800: '#115E59',
+              900: '#134E4A',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans min-h-screen flex flex-col pb-24">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-brand-700 text-white sticky top-0 z-30 shadow-md">
+    <div class="max-w-xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2">
+        <span class="text-3xl">💊</span>
+        <div>
+          <h1 class="text-xl font-bold leading-tight tracking-wide">Dawai Saathi</h1>
+          <p class="text-xs text-brand-100 font-medium">దవై साथी • Medicine Helper</p>
+        </div>
+      </div>
+
+      <!-- Language Selector -->
+      <div class="relative">
+        <select id="langSelect" class="bg-brand-800 text-white text-sm font-semibold rounded-lg px-2.5 py-1.5 border border-brand-500 focus:outline-none focus:ring-2 focus:ring-teal-300">
+          <option value="te-IN" selected>🇮🇳 తెలుగు (Telugu)</option>
+          <option value="hi-IN">🇮🇳 हिन्दी (Hindi)</option>
+          <option value="ta-IN">🇮🇳 தமிழ் (Tamil)</option>
+          <option value="kn-IN">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+          <option value="bn-IN">🇮🇳 বাংলা (Bengali)</option>
+          <option value="mr-IN">🇮🇳 मराठी (Marathi)</option>
+          <option value="gu-IN">🇮🇳 ગુજરાતી (Gujarati)</option>
+          <option value="ml-IN">🇮🇳 മലയാളം (Malayalam)</option>
+          <option value="pa-IN">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+          <option value="en-IN">🌐 English</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Mode Navigation Tabs -->
+    <div class="max-w-xl mx-auto grid grid-cols-3 bg-brand-800/80 text-xs font-semibold text-center border-t border-brand-600">
+      <button id="tabScan" class="py-2.5 border-b-2 border-white text-white flex flex-col items-center justify-center space-y-0.5">
+        <span class="text-base">📸</span>
+        <span>Scan Rx</span>
+      </button>
+      <button id="tabQna" class="py-2.5 border-b-2 border-transparent text-brand-200 hover:text-white flex flex-col items-center justify-center space-y-0.5">
+        <span class="text-base">🎙️</span>
+        <span>Voice Q&A</span>
+      </button>
+      <button id="tabFamily" class="py-2.5 border-b-2 border-transparent text-brand-200 hover:text-white flex flex-col items-center justify-center space-y-0.5">
+        <span class="text-base">👨‍👩‍👦</span>
+        <span>Family Voice</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-xl w-full mx-auto p-4 flex-1">
+
+    <!-- Notification / Toast Container -->
+    <div id="toast" class="hidden mb-4 p-3 rounded-xl text-sm font-medium shadow-sm transition-all"></div>
+
+    <!-- ============================================== -->
+    <!-- SECTION 1: SCAN PRESCRIPTION / LAB REPORT -->
+    <!-- ============================================== -->
+    <section id="sectionScan" class="space-y-5">
+      <!-- Quick Hero Info Card -->
+      <div class="bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200 rounded-2xl p-4 shadow-sm">
+        <h2 class="text-base font-bold text-teal-900 flex items-center space-x-2">
+          <span>🩺</span>
+          <span id="heroTitle">Upload Prescription or Lab Report</span>
+        </h2>
+        <p class="text-xs text-teal-700 mt-1" id="heroDesc">
+          Take a photo of your doctor's prescription. We will explain all medicines in your own voice and language.
+        </p>
+      </div>
+
+      <!-- Upload Controls Card -->
+      <div class="bg-white rounded-2xl border-2 border-dashed border-teal-300 p-6 text-center shadow-sm hover:border-teal-500 transition-colors">
+        <input type="file" id="rxFileInput" accept="image/*" capture="environment" class="hidden">
+        <div class="flex flex-col items-center justify-center space-y-3 cursor-pointer" onclick="document.getElementById('rxFileInput').click()">
+          <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center text-3xl text-teal-700">
+            📷
+          </div>
+          <div>
+            <p class="font-bold text-slate-800 text-sm">Tap to Take Photo or Upload Image</p>
+            <p class="text-xs text-slate-500 mt-0.5">Camera photo, PNG, JPEG or screenshot</p>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-center space-x-3">
+          <span class="text-xs text-slate-400 font-medium">Or demo instantly:</span>
+          <button id="btnSampleRx" class="bg-teal-50 text-teal-700 hover:bg-teal-100 text-xs font-bold px-3 py-1.5 rounded-lg border border-teal-200 transition">
+            ⚡ Load Sample Prescription
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div id="scanLoading" class="hidden bg-white rounded-2xl p-6 text-center shadow-sm border border-slate-200">
+        <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-teal-600 border-t-transparent"></div>
+        <p class="font-bold text-slate-800 text-sm mt-3" id="loadingText">Analyzing Prescription & Synthesizing Voice...</p>
+        <p class="text-xs text-slate-500 mt-1">Reading handwriting, detecting doses, generating Telugu voice</p>
+      </div>
+
+      <!-- Prescription Result Container -->
+      <div id="rxResult" class="hidden space-y-4">
+        
+        <!-- Big Hero Spoken Explanation Player -->
+        <div class="bg-gradient-to-br from-brand-700 to-teal-800 text-white rounded-2xl p-4 shadow-md">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-semibold bg-brand-900/60 text-teal-200 px-2.5 py-0.5 rounded-full flex items-center space-x-1">
+              <span>🔊</span>
+              <span>Gnani AI Spoken Summary</span>
+            </span>
+            <span class="text-xs text-teal-200" id="audioVoiceBadge">Timbre Stock Voice</span>
+          </div>
+
+          <p class="text-xs text-teal-100 italic mb-3" id="spokenSummaryPreview">
+            "నమస్కారం, డాక్టర్ గారు మీకు నాలుగు రకాల మందులు రాశారు..."
+          </p>
+
+          <div class="flex items-center space-x-3 bg-brand-900/40 p-2.5 rounded-xl border border-teal-600/40">
+            <button id="btnPlaySummary" class="w-12 h-12 bg-white text-teal-800 rounded-full flex items-center justify-center font-bold text-lg shadow-md hover:bg-teal-50 transition transform active:scale-95">
+              ▶
+            </button>
+            <div class="flex-1">
+              <div class="flex justify-between text-xs text-teal-200 mb-1">
+                <span id="audioCurrentTime">0:00</span>
+                <span id="audioTotalTime">0:00</span>
+              </div>
+              <div class="w-full bg-teal-950 rounded-full h-2 overflow-hidden cursor-pointer" id="audioProgressContainer">
+                <div id="audioProgressBar" class="bg-teal-300 h-2 rounded-full w-0 transition-all"></div>
+              </div>
+            </div>
+          </div>
+          <audio id="summaryAudioPlayer" class="hidden"></audio>
+        </div>
+
+        <!-- Medicine Cards -->
+        <div>
+          <div class="flex items-center justify-between mb-2 px-1">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-1.5">
+              <span>💊</span>
+              <span>Medicines to Take (<span id="medCount">0</span>)</span>
+            </h3>
+            <span class="text-xs text-slate-500 font-medium">Daily Schedule</span>
+          </div>
+          <div id="medicineCardsList" class="space-y-3">
+            <!-- Dynamic Medicine Cards injected here -->
+          </div>
+        </div>
+
+        <!-- Yellow Pharmacist Confirmation Box (unclear items) -->
+        <div id="unclearBox" class="hidden bg-amber-50 border-l-4 border-amber-500 rounded-xl p-3.5 shadow-sm">
+          <div class="flex items-start space-x-2.5">
+            <span class="text-xl">⚠️</span>
+            <div>
+              <h4 class="font-bold text-amber-900 text-xs uppercase tracking-wider">Please Confirm with Pharmacist</h4>
+              <p class="text-xs text-amber-800 mt-0.5">The following items are handwriting-unclear or ambiguous:</p>
+              <ul id="unclearList" class="mt-1 text-xs text-amber-900 list-disc list-inside font-medium space-y-0.5"></ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Red Warning Box (Emergency Signs) -->
+        <div id="doctorWarningBox" class="bg-red-50 border-l-4 border-red-500 rounded-xl p-3.5 shadow-sm">
+          <div class="flex items-start space-x-2.5">
+            <span class="text-xl">🚨</span>
+            <div>
+              <h4 class="font-bold text-red-900 text-xs uppercase tracking-wider">Go to Doctor Immediately If:</h4>
+              <ul id="doctorWarningList" class="mt-1 text-xs text-red-800 list-disc list-inside font-medium space-y-0.5">
+                <li>High fever exceeding 103°F</li>
+                <li>Breathing difficulty or chest pain</li>
+                <li>Symptoms worsen after taking medicine</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Family Reminders CTA Button -->
+        <div class="pt-2">
+          <button id="btnGoToReminders" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-xl shadow-md flex items-center justify-center space-x-2 transition transform active:scale-95">
+            <span>👨‍👩‍👦</span>
+            <span>Set Cloned Family Voice Reminders</span>
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SECTION 2: VOICE Q&A (Prisma v3.0 STT) -->
+    <!-- ============================================== -->
+    <section id="sectionQna" class="hidden space-y-5">
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4 shadow-sm">
+        <h2 class="text-base font-bold text-indigo-900 flex items-center space-x-2">
+          <span>🎙️</span>
+          <span>Ask Any Question by Voice</span>
+        </h2>
+        <p class="text-xs text-indigo-700 mt-1">
+          Ask in Telugu, Hindi, Tamil, or mixed Hinglish. We only answer what is written on your prescription.
+        </p>
+      </div>
+
+      <!-- Prescription Context Pill -->
+      <div id="qnaContextPill" class="bg-white border border-slate-200 rounded-xl p-3 flex items-center justify-between text-xs">
+        <span class="text-slate-600 flex items-center space-x-1.5">
+          <span>📄</span>
+          <span id="qnaRxStatus">Prescription: <strong class="text-teal-700">Lakshmi Devi (Warangal)</strong></span>
+        </span>
+        <span class="bg-green-100 text-green-800 font-bold px-2 py-0.5 rounded text-[10px]">Verified Rx</span>
+      </div>
+
+      <!-- Big Mic Record Area -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 text-center shadow-sm">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4" id="micInstruction">
+          Tap microphone and speak your question
+        </p>
+
+        <div class="flex items-center justify-center my-4">
+          <button id="btnRecordQuestion" class="w-24 h-24 rounded-full bg-indigo-600 text-white text-3xl shadow-lg hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center relative">
+            <span id="micIcon">🎙️</span>
+            <div id="micPulse" class="hidden absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-75"></div>
+          </button>
+        </div>
+
+        <p class="text-xs font-bold text-indigo-900" id="recordingTimer">00:00</p>
+        <p class="text-[11px] text-slate-400 mt-1">Powered by Gnani Prisma v3.0 (Code-mixed STT)</p>
+
+        <!-- Use Cloned Voice Toggle -->
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-center space-x-2 text-xs">
+          <input type="checkbox" id="chkUseFamilyVoiceQna" class="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500">
+          <label for="chkUseFamilyVoiceQna" class="font-medium text-slate-700">Reply in Family Cloned Voice (if enrolled)</label>
+        </div>
+      </div>
+
+      <!-- Q&A Conversation Card -->
+      <div id="qnaResultCard" class="hidden bg-white rounded-2xl border border-indigo-200 p-4 shadow-sm space-y-3">
+        <!-- User Query -->
+        <div class="bg-slate-50 rounded-xl p-3 border border-slate-200">
+          <div class="flex items-center justify-between text-xs text-slate-500 mb-1">
+            <span class="font-bold flex items-center space-x-1">
+              <span>🗣️</span>
+              <span>Your Voice Question:</span>
+            </span>
+            <span id="detectedLangBadge" class="bg-indigo-100 text-indigo-700 font-bold px-1.5 py-0.5 rounded text-[10px]">te-IN</span>
+          </div>
+          <p id="qnaTranscript" class="text-sm font-semibold text-slate-800 italic">"ఈ మందులు ఎప్పుడు వేసుకోవాలి?"</p>
+        </div>
+
+        <!-- Assistant Reply -->
+        <div class="bg-indigo-50 rounded-xl p-3 border border-indigo-200">
+          <div class="flex items-center justify-between text-xs text-indigo-800 mb-1">
+            <span class="font-bold flex items-center space-x-1">
+              <span>🤖</span>
+              <span>Dawai Saathi Answer:</span>
+            </span>
+            <span class="text-[10px] text-indigo-600 font-medium">From Prescription Only</span>
+          </div>
+          <p id="qnaAnswerText" class="text-sm font-medium text-indigo-950">
+            మీ ప్రిస్క్రిప్షన్ ప్రకారం, ఖాళీ కడుపుతో ఉదయం పూట పాంటోప్రజోల్ మాత్ర వేసుకోవాలి.
+          </p>
+
+          <!-- Voice Audio Player -->
+          <div class="mt-3 pt-2 border-t border-indigo-200/60 flex items-center space-x-2">
+            <button id="btnPlayQnaAudio" class="bg-indigo-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-xs font-bold shadow hover:bg-indigo-700 transition">
+              ▶
+            </button>
+            <span class="text-xs font-medium text-indigo-900" id="qnaAudioLabel">Listen to voice reply</span>
+            <audio id="qnaAudioPlayer" class="hidden"></audio>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- SECTION 3: FAMILY VOICE CLONING & REMINDERS -->
+    <!-- ============================================== -->
+    <section id="sectionFamily" class="hidden space-y-5">
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-2xl p-4 shadow-sm">
+        <h2 class="text-base font-bold text-purple-900 flex items-center space-x-2">
+          <span>👨‍👩‍👦</span>
+          <span>Voice-Cloned Medicine Reminders</span>
+        </h2>
+        <p class="text-xs text-purple-700 mt-1">
+          Hero Feature: Record 10-20 seconds of your voice. We will remind your mother or father in YOUR voice: <em>"Amma, take the tablet after lunch."</em>
+        </p>
+      </div>
+
+      <!-- Sub-tabs: 1. Voice Setup | 2. Daily Reminders -->
+      <div class="flex border-b border-slate-200 text-xs font-bold">
+        <button id="subTabEnroll" class="py-2 px-4 border-b-2 border-purple-600 text-purple-700">1. Record Voice</button>
+        <button id="subTabDashboard" class="py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-purple-600">2. Today's Reminders</button>
+      </div>
+
+      <!-- Panel A: Record Voice & Consent -->
+      <div id="panelEnroll" class="space-y-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Your Name (Relative)</label>
+              <input type="text" id="voiceFamilyName" placeholder="Rahul (Son)" value="Rahul (Son)" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-400 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">How you call patient?</label>
+              <input type="text" id="voiceCallName" placeholder="Amma / Nanna" value="Amma" class="w-full text-xs border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-purple-400 focus:outline-none">
+            </div>
+          </div>
+
+          <!-- Sample Sentence to Read Aloud -->
+          <div class="bg-purple-50 rounded-xl p-3 border border-purple-200">
+            <span class="text-[11px] font-bold text-purple-900 uppercase tracking-wide">Read this aloud to record:</span>
+            <p class="text-xs font-semibold text-purple-950 mt-1" id="voicePromptText">
+              "అమ్మా, మీరు సమయానికి మందులు వేసుకోండి. భోజనం తర్వాత మాత్ర తీసుకోండి. నీరు ఎక్కువగా తాగండి, మీ ఆరోగ్యం జాగ్రత్త."
+            </p>
+            <p class="text-[10px] text-purple-600 mt-1 italic">(Speak clearly in a quiet room for 10-20 seconds)</p>
+          </div>
+
+          <!-- Mic Record Button for Family Member -->
+          <div class="flex flex-col items-center justify-center py-2">
+            <button id="btnRecordFamilyVoice" class="w-20 h-20 rounded-full bg-purple-600 text-white text-2xl shadow-md hover:bg-purple-700 active:scale-95 transition flex items-center justify-center relative">
+              <span id="familyMicIcon">🎙️</span>
+              <div id="familyMicPulse" class="hidden absolute inset-0 rounded-full bg-purple-400 animate-ping opacity-75"></div>
+            </button>
+            <p class="text-xs font-bold text-purple-900 mt-2" id="familyRecordingTimer">00:00 (Minimum 10s)</p>
+            <div id="familyAudioPreview" class="hidden mt-2">
+              <audio id="familyAudioPlayer" controls class="h-8 max-w-xs"></audio>
+            </div>
+          </div>
+
+          <!-- Mandatory Consent Checkbox -->
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <label class="flex items-start space-x-2.5 cursor-pointer">
+              <input type="checkbox" id="chkFamilyConsent" class="mt-0.5 w-4 h-4 text-purple-600 rounded border-slate-300 focus:ring-purple-500">
+              <span class="text-xs text-slate-700 leading-snug">
+                <strong>Explicit Voice Consent:</strong> I confirm I am recording my own voice and agree it may be used solely to generate medicine dosage reminder audio for my family member.
+              </span>
+            </label>
+          </div>
+
+          <!-- Submit Enrollment Button -->
+          <button id="btnSaveFamilyVoice" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 px-4 rounded-xl shadow text-sm transition transform active:scale-95">
+            ✨ Extract Voice Embedding & Save Profile
+          </button>
+        </div>
+
+        <!-- Enrolled Profiles List -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+          <h3 class="font-bold text-xs text-slate-800 uppercase tracking-wider mb-2">Saved Voice Profiles</h3>
+          <div id="enrolledVoicesList" class="space-y-2">
+            <p class="text-xs text-slate-400 italic">No family voices enrolled yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel B: Daily Reminders Dashboard -->
+      <div id="panelDashboard" class="hidden space-y-4">
+        <!-- Review & Approval Step -->
+        <div id="proposalsReviewBox" class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-xs text-slate-800 uppercase tracking-wide">Review Reminder Scripts for Approval</h3>
+            <span class="text-[10px] bg-teal-100 text-teal-800 font-bold px-2 py-0.5 rounded">Safety Approved</span>
+          </div>
+          <p class="text-xs text-slate-500">
+            To prevent unauthorized medical claims, your cloned voice ONLY speaks pre-approved dosage template scripts:
+          </p>
+          <div id="proposalsList" class="space-y-2">
+            <!-- Dynamic template proposals loaded here -->
+          </div>
+          <button id="btnGenerateAllClonedAudio" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-4 rounded-xl shadow text-xs transition transform active:scale-95">
+            🎙️ Synthesize Approved Reminders in Cloned Voice
+          </button>
+        </div>
+
+        <!-- Today's Schedule Cards -->
+        <div>
+          <div class="flex items-center justify-between mb-2 px-1">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center space-x-1.5">
+              <span>⏰</span>
+              <span>Today's Dosage Schedule</span>
+            </h3>
+            <span class="text-xs text-slate-500 font-medium" id="scheduleDate">Today</span>
+          </div>
+
+          <div id="remindersCardsList" class="space-y-3">
+            <!-- Reminders with Play button, Toggle Taken, and WhatsApp share injected here -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Persistent Safety Footer -->
+  <footer class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-2.5 px-4 z-20 shadow-lg">
+    <div class="max-w-xl mx-auto flex items-center justify-between text-xs text-slate-600">
+      <div class="flex items-center space-x-2">
+        <span class="text-amber-500 text-base">⚠️</span>
+        <span class="text-[11px] font-medium leading-tight">
+          This app explains what is written. It does <strong>not</strong> replace your doctor.
+        </span>
+      </div>
+      <span class="text-[10px] text-teal-700 font-bold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+        Gnani AI Hackathon
+      </span>
+    </div>
+  </footer>
+
+  <!-- App Script -->
+  <script src="/static/app.js"></script>
+</body>
+</html>
