@@ -11,11 +11,9 @@
 
 ---
 
-### Access Points
+### Quick Links
 * **Live Production Application:** [Dawai Saathi | दवाई साथी | మందుల సహచరి](https://daawai-saathi.onrender.com/)
 * **One-Page Solution Pitch:** [SOLUTION_PITCH.md](SOLUTION_PITCH.md)
-* **Demo Video Script (3-Minute Walkthrough):** [DEMO.md](DEMO.md)
-* **GitHub Repository:** [https://github.com/Rahul-14507/Daawai_saathi](https://github.com/Rahul-14507/Daawai_saathi)
 
 ---
 
