@@ -198,3 +198,5 @@ The repository includes a ready `Dockerfile` and `requirements.txt`:
 
 This project is licensed under the MIT License.  
 **Disclaimer**: *Dawai Saathi is an educational and supportive tool designed to improve health literacy and medicine adherence. It explains what is written on prescriptions and does NOT diagnose, prescribe, or replace qualified medical practitioners.*
+
+"# Daawai_saathi" 
