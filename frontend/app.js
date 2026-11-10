@@ -598,6 +598,44 @@ function initFamilyVoiceControls() {
     }
   });
 
+  // Upload Audio File for Voice Cloning
+  const fileInput = document.getElementById("familyFileInput");
+  if (fileInput) {
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        state.familyRecordedBlob = file;
+        previewDiv.classList.remove("hidden");
+        player.src = URL.createObjectURL(file);
+        const label = document.getElementById("familyAudioPreviewLabel");
+        if (label) label.textContent = `Selected file: ${file.name}`;
+        document.getElementById("familyRecordingTimer").textContent = "Audio file loaded!";
+        showToast(`Loaded voice file: ${file.name}`, "success");
+      }
+    });
+  }
+
+  // One-click Sample Voice Loader
+  const btnSampleVoice = document.getElementById("btnUseSampleVoice");
+  if (btnSampleVoice) {
+    btnSampleVoice.addEventListener("click", async () => {
+      try {
+        const resp = await fetch("/samples/reference_speech.wav");
+        if (!resp.ok) throw new Error("Could not fetch sample voice file");
+        const blob = await resp.blob();
+        state.familyRecordedBlob = blob;
+        previewDiv.classList.remove("hidden");
+        player.src = URL.createObjectURL(blob);
+        const label = document.getElementById("familyAudioPreviewLabel");
+        if (label) label.textContent = "Pre-loaded Sample Voice (6s clean speech)";
+        document.getElementById("familyRecordingTimer").textContent = "Sample Voice Loaded (00:06)";
+        showToast("Sample voice loaded! Check consent box and save.", "success");
+      } catch (e) {
+        showToast("Error loading sample voice: " + e.message, "error");
+      }
+    });
+  }
+
   // Save Voice Profile with Mandatory Consent
   document.getElementById("btnSaveFamilyVoice").addEventListener("click", async () => {
     const consent = document.getElementById("chkFamilyConsent").checked;
@@ -946,3 +984,4 @@ function formatTime(seconds) {
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
 }
+

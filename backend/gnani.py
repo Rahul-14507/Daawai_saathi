@@ -57,16 +57,15 @@ def tts_stock(text: str, lang: str = "hi-IN", voice: Optional[str] = None) -> by
     # Check cache
     cache_fn = get_cache_filename(text, f"stock_{model}_{chosen_voice}", lang)
     cached = get_cached_audio(cache_fn)
-    if cached:
+    # Ensure cached file is real speech (not old fallback chime of ~168KB)
+    if cached and len(cached) > 175000:
         logger.info(f"TTS Stock Cache Hit: {cache_fn}")
         return cached
 
     # If no key, return synthesized fallback audio
     if not GNANI_API_KEY or GNANI_API_KEY == "your_gnani_api_key_here":
         logger.warning("GNANI_API_KEY not configured; returning fallback audio chime.")
-        fallback = generate_fallback_chime(text)
-        save_cached_audio(cache_fn, fallback)
-        return fallback
+        return generate_fallback_chime(text)
 
     url = f"{GNANI_BASE_URL}/api/v1/tts/inference"
     payload = {
@@ -113,9 +112,7 @@ def tts_stock(text: str, lang: str = "hi-IN", voice: Optional[str] = None) -> by
 
     # Graceful degradation: never crash
     logger.error(f"TTS Stock failed after retries ({last_err}); serving fallback chime.")
-    fallback = generate_fallback_chime(text)
-    save_cached_audio(cache_fn, fallback)
-    return fallback
+    return generate_fallback_chime(text)
 
 def make_embedding(wav_bytes: bytes) -> Dict[str, Any]:
     """
@@ -170,7 +167,7 @@ def tts_cloned(text: str, embedding: Dict[str, Any], lang: str = "hi-IN", with_t
     emb_repr = embedding.get("embedding", "")[:24]
     cache_fn = get_cache_filename(text, f"cloned_{emb_repr}", lang)
     cached = get_cached_audio(cache_fn)
-    if cached:
+    if cached and len(cached) > 175000:
         logger.info(f"TTS Cloned Cache Hit: {cache_fn}")
         return cached
 
@@ -294,3 +291,4 @@ def stt(wav_bytes: bytes, lang: str = "indic-auto") -> Dict[str, Any]:
         "detected_language": lang,
         "error": str(last_err)
     }
+
