@@ -231,3 +231,4 @@ def toggle_reminder_taken(reminder_id: str) -> Optional[bool]:
         conn.execute("UPDATE reminders SET is_taken = ? WHERE id = ?", (new_status, reminder_id))
     conn.close()
     return bool(new_status)
+

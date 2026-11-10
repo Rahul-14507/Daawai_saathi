@@ -13,3 +13,4 @@ This folder contains pre-generated realistic assets for rapid testing and hackat
 
 ### How to Add Your Own Prescription
 - Place any clear photo of a doctor's handwritten or printed prescription/discharge summary into this folder or upload directly from the web interface.
+

@@ -138,3 +138,4 @@ def generate_fallback_chime(text: str = "", duration_sec: float = 3.5) -> bytes:
             frames += struct.pack("<h", max(-32767, min(32767, val)))
         w.writeframes(frames)
     return buf.getvalue()
+

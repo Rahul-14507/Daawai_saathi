@@ -66,3 +66,4 @@ Check out the demo video and open-source repo below! 👇
 > Instead of robotic alarms, the patient hears their son's affectionate voice: *"Amma, take the tablet after lunch."* 
 > 
 > Pre-approved medical templates only + mandatory consent + AI disclaimer tag. Tech with empathy. ❤️
+
