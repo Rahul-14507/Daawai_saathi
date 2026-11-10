@@ -2,18 +2,13 @@
 > **Voice-First Medicine Companion for Rural and Elderly Patients**  
 > Built for the Gnani AI Hackathon
 
-[![Live Web Application](https://img.shields.io/badge/Live%20Demo-Dawai%20Saathi%20on%20Render-009688?style=for-the-badge&logo=render)](https://daawai-saathi.onrender.com/)
-[![Solution Pitch](https://img.shields.io/badge/Executive%20Summary-1--Page%20Solution%20Pitch-064E3B?style=for-the-badge&logo=googledocs)](SOLUTION_PITCH.md)
+* **Live Application:** [Dawai Saathi | दवाई साथी | మందుల సహచరి](https://daawai-saathi.onrender.com/)
+* **One-Page Solution Pitch:** [SOLUTION_PITCH.md](SOLUTION_PITCH.md)
+
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com)
 [![Gnani AI](https://img.shields.io/badge/Voice%20AI-Gnani.ai-indigo)](https://vachana.ai)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
----
-
-### Quick Links
-* **Live Production Application:** [Dawai Saathi | दवाई साथी | మందుల సహచరి](https://daawai-saathi.onrender.com/)
-* **One-Page Solution Pitch:** [SOLUTION_PITCH.md](SOLUTION_PITCH.md)
 
 ---
 
