@@ -811,16 +811,54 @@ function initFamilyVoiceControls() {
     formData.append("language", state.currentLang);
     formData.append("consent", "true");
 
-    showToast("Extracting Voice Clone Embedding via Gnani AI...", "info");
+    // Elements for Voice Embedding Progress Bar
+    const enrollProgressBox = document.getElementById("voiceEnrollProgressBox");
+    const enrollStepLabel = document.getElementById("voiceEnrollStepLabel");
+    const enrollPercent = document.getElementById("voiceEnrollPercent");
+    const enrollProgressBar = document.getElementById("voiceEnrollProgressBar");
+    const btnSaveVoice = document.getElementById("btnSaveFamilyVoice");
+
+    btnSaveVoice.disabled = true;
+    btnSaveVoice.classList.add("opacity-50", "cursor-not-allowed");
+    if (enrollProgressBox) enrollProgressBox.classList.remove("hidden");
+
+    let enrollStep = 0;
+    const enrollSteps = [
+      { pct: 20, text: "1/4: Converting audio to 16kHz mono WAV..." },
+      { pct: 45, text: "2/4: Uploading speech to Gnani Vachana AI..." },
+      { pct: 75, text: "3/4: Extracting 768-dim speaker acoustic embedding..." },
+      { pct: 90, text: "4/4: Modeling vocal pitch, timbre, and cadence..." }
+    ];
+
+    function setEnrollProgress(pct, text) {
+      if (enrollProgressBar) enrollProgressBar.style.width = `${pct}%`;
+      if (enrollPercent) enrollPercent.textContent = `${pct}%`;
+      if (enrollStepLabel) enrollStepLabel.textContent = text;
+    }
+
+    setEnrollProgress(enrollSteps[0].pct, enrollSteps[0].text);
+    const enrollInterval = setInterval(() => {
+      enrollStep++;
+      if (enrollStep < enrollSteps.length) {
+        setEnrollProgress(enrollSteps[enrollStep].pct, enrollSteps[enrollStep].text);
+      }
+    }, 2500);
+
     try {
       const resp = await fetch("/api/family/voice", {
         method: "POST",
         body: formData,
       });
+      clearInterval(enrollInterval);
+
       if (!resp.ok) {
         const err = await resp.json();
         throw new Error(err.detail || "Failed to save voice profile");
       }
+
+      setEnrollProgress(100, "Voice Profile Cloned & Saved Successfully! 🎉");
+      await new Promise((r) => setTimeout(r, 600));
+
       const data = await resp.json();
       state.selectedVoiceId = data.voice_id;
       showToast(`Success! Voice cloned for ${name}.`, "success");
@@ -829,7 +867,12 @@ function initFamilyVoiceControls() {
       // Automatically switch to Reminders dashboard
       subDash.click();
     } catch (e) {
+      clearInterval(enrollInterval);
       showToast(`Voice Cloning Error: ${e.message}`, "error");
+    } finally {
+      if (enrollProgressBox) enrollProgressBox.classList.add("hidden");
+      btnSaveVoice.disabled = false;
+      btnSaveVoice.classList.remove("opacity-50", "cursor-not-allowed");
     }
   });
 
@@ -978,6 +1021,47 @@ async function synthesizeClonedReminders() {
     return;
   }
 
+  // Elements for Reminder Synthesis Progress Bar
+  const genProgressBox = document.getElementById("reminderGenProgressBox");
+  const genStepLabel = document.getElementById("reminderGenStepLabel");
+  const genPercent = document.getElementById("reminderGenPercent");
+  const genProgressBar = document.getElementById("reminderGenProgressBar");
+  const btnGenReminders = document.getElementById("btnGenerateAllClonedAudio");
+
+  btnGenReminders.disabled = true;
+  btnGenReminders.classList.add("opacity-50", "cursor-not-allowed");
+  if (genProgressBox) genProgressBox.classList.remove("hidden");
+
+  function setGenProgress(pct, text) {
+    if (genProgressBar) genProgressBar.style.width = `${pct}%`;
+    if (genPercent) genPercent.textContent = `${pct}%`;
+    if (genStepLabel) genStepLabel.textContent = text;
+  }
+
+  // Build dynamic steps based on approved reminders
+  const totalDoses = approvedList.length;
+  let genStep = 0;
+  const genSteps = [
+    { pct: 15, text: "Connecting to Gnani Voice Cloning engine (vachana-vc-v1)..." }
+  ];
+  approvedList.forEach((dose, i) => {
+    const slotTitle = dose.slot.charAt(0).toUpperCase() + dose.slot.slice(1);
+    const dosePct = Math.round(20 + ((i + 1) / (totalDoses + 1)) * 65);
+    genSteps.push({
+      pct: dosePct,
+      text: `Voicing ${slotTitle} Dose (${i + 1} of ${totalDoses}) in cloned voice...`
+    });
+  });
+  genSteps.push({ pct: 90, text: "Attaching regional AI reminder disclaimer tag to end..." });
+
+  setGenProgress(genSteps[0].pct, genSteps[0].text);
+  const genInterval = setInterval(() => {
+    genStep++;
+    if (genStep < genSteps.length) {
+      setGenProgress(genSteps[genStep].pct, genSteps[genStep].text);
+    }
+  }, 2200);
+
   try {
     const payload = {
       prescription_id: state.activePrescriptionId,
@@ -991,18 +1075,27 @@ async function synthesizeClonedReminders() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    clearInterval(genInterval);
 
     if (!resp.ok) {
       const err = await resp.json();
       throw new Error(err.detail || "Reminder synthesis failed");
     }
 
+    setGenProgress(100, "All reminders successfully synthesized in cloned voice! 🎉");
+    await new Promise((r) => setTimeout(r, 600));
+
     const reminders = await resp.json();
     state.currentReminders = reminders;
     renderRemindersDashboard(reminders);
     showToast("Reminders voiced with AI tag attached!", "success");
   } catch (e) {
+    clearInterval(genInterval);
     showToast(`Error: ${e.message}`, "error");
+  } finally {
+    if (genProgressBox) genProgressBox.classList.add("hidden");
+    btnGenReminders.disabled = false;
+    btnGenReminders.classList.remove("opacity-50", "cursor-not-allowed");
   }
 }
 

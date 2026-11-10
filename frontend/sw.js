@@ -1,10 +1,10 @@
 // Dawai Saathi Service Worker for PWA Installation and Offline Fallback
-const CACHE_NAME = 'dawai-saathi-v2.2';
+const CACHE_NAME = 'dawai-saathi-v2.3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/static/styles.css?v=2.2',
-  '/static/app.js?v=2.2',
+  '/static/styles.css?v=2.3',
+  '/static/app.js?v=2.3',
   '/icon-192.png',
   '/icon-512.png',
   '/apple-touch-icon.png',
