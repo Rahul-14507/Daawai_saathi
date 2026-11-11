@@ -132,24 +132,41 @@ def _call_gemini_vision(image_bytes: bytes, mime_type: str, user_prompt: str) ->
     import concurrent.futures
 
     genai.configure(api_key=LLM_API_KEY)
-    model_name = LLM_MODEL or "gemini-3.8-flash"
-    model = genai.GenerativeModel(
-        model_name=model_name,
-        system_instruction=SYSTEM_EXTRACTION_PROMPT
-    )
     
-    def _gen():
-        return model.generate_content([
-            {"mime_type": mime_type, "data": image_bytes},
-            user_prompt
-        ])
+    # Try primary stable model first, with fallbacks
+    model_candidates = [
+        "gemini-3.5-flash",
+        LLM_MODEL or "gemini-3.8-flash",
+        "gemini-flash-latest"
+    ]
+    
+    last_err = None
+    for model_name in model_candidates:
+        try:
+            logger.info(f"Attempting vision OCR with Gemini model: {model_name}")
+            model = genai.GenerativeModel(
+                model_name=model_name,
+                system_instruction=SYSTEM_EXTRACTION_PROMPT
+            )
+            
+            def _gen():
+                return model.generate_content([
+                    {"mime_type": mime_type, "data": image_bytes},
+                    user_prompt
+                ])
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(_gen)
-        response = future.result(timeout=4.0)
-    
-    text = response.text.strip()
-    return _parse_json_to_prescription(text)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(_gen)
+                response = future.result(timeout=35.0)
+            
+            text = response.text.strip()
+            return _parse_json_to_prescription(text)
+        except Exception as e:
+            last_err = e
+            logger.warning(f"Model {model_name} vision attempt failed: {e}")
+            continue
+
+    raise RuntimeError(f"All Gemini vision candidates failed: {last_err}")
 
 
 def _call_anthropic_vision(image_bytes: bytes, mime_type: str, user_prompt: str) -> PrescriptionData:
@@ -184,13 +201,86 @@ def _call_anthropic_vision(image_bytes: bytes, mime_type: str, user_prompt: str)
 
 def _parse_json_to_prescription(raw_text: str) -> PrescriptionData:
     # Clean possible markdown wrapping
-    cleaned = raw_text
+    cleaned = raw_text.strip()
     if "```json" in cleaned:
         cleaned = cleaned.split("```json", 1)[1].split("```", 1)[0].strip()
     elif "```" in cleaned:
         cleaned = cleaned.split("```", 1)[1].split("```", 1)[0].strip()
     
     data = json.loads(cleaned)
+    
+    # Normalize nested formats if LLM returned alternative keys
+    if "medicines" not in data and "prescribed_medications" in data:
+        data["medicines"] = data["prescribed_medications"]
+    elif "medicines" not in data and "visits" in data and isinstance(data["visits"], list):
+        # Flatten medicines across visits
+        all_meds = []
+        for v in data["visits"]:
+            all_meds.extend(v.get("prescribed_medications", []))
+        data["medicines"] = all_meds
+
+    if "findings_plain" not in data:
+        findings = ""
+        if "clinical_notes" in data and isinstance(data["clinical_notes"], dict):
+            findings = " ".join(data["clinical_notes"].get("chief_complaints", [])) + " " + str(data["clinical_notes"].get("findings", ""))
+        data["findings_plain"] = findings.strip() or data.get("summary") or "Doctor prescription analyzed."
+
+    if "spoken_summary" not in data:
+        data["spoken_summary"] = data["findings_plain"]
+
+    # Normalize medicines list
+    norm_meds = []
+    for m in data.get("medicines", []):
+        if isinstance(m, dict):
+            name = m.get("name", "Prescribed Tablet")
+            timing = m.get("timing", ["morning"])
+            if isinstance(timing, str):
+                t_lower = timing.lower()
+                timing = []
+                if "morning" in t_lower or "1 +" in t_lower or "1+" in t_lower or "breakfast" in t_lower:
+                    timing.append("morning")
+                if "afternoon" in t_lower or "noon" in t_lower or "lunch" in t_lower:
+                    timing.append("afternoon")
+                if "night" in t_lower or "+ 1" in t_lower or "+1" in t_lower or "dinner" in t_lower:
+                    timing.append("night")
+                if not timing:
+                    timing = ["morning"]
+
+            with_food = m.get("with_food", "after")
+            if with_food not in ["before", "after", "with", "unknown"]:
+                wf_str = str(with_food).lower()
+                if "before" in wf_str or "আগে" in wf_str:
+                    with_food = "before"
+                elif "after" in wf_str or "পর" in wf_str:
+                    with_food = "after"
+                elif "with" in wf_str:
+                    with_food = "with"
+                else:
+                    with_food = "after"
+
+            norm_meds.append(MedicineItem(
+                name=name,
+                strength=str(m.get("strength") or ""),
+                dose=str(m.get("dose") or m.get("frequency") or "1 tablet"),
+                frequency_per_day=int(m.get("frequency_per_day") or len(timing) or 1),
+                timing=timing,
+                with_food=with_food,
+                duration_days=int(m.get("duration_days") or 5),
+                purpose_plain=str(m.get("purpose_plain") or ""),
+                confidence=float(m.get("confidence") or 0.95)
+            ))
+    data["medicines"] = norm_meds
+    
+    # Ensure document_type & language
+    if "document_type" not in data or data["document_type"] not in ["prescription", "lab_report", "other"]:
+        data["document_type"] = "prescription"
+    if "language" not in data:
+        data["language"] = "te-IN"
+    if "unclear_items" not in data:
+        data["unclear_items"] = []
+    if "see_doctor_if" not in data:
+        data["see_doctor_if"] = []
+
     return PrescriptionData(**data)
 
 
@@ -217,7 +307,7 @@ Please provide a reassuring, safe, 2-3 sentence answer strictly in {lang_info['n
         try:
             import google.generativeai as genai
             genai.configure(api_key=LLM_API_KEY)
-            model_name = LLM_MODEL or "gemini-2.5-flash"
+            model_name = LLM_MODEL or "gemini-3.5-flash"
             model = genai.GenerativeModel(model_name, system_instruction=sys_prompt)
             resp = model.generate_content(user_prompt)
             return resp.text.strip()
