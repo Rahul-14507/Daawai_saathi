@@ -118,7 +118,23 @@ def make_embedding(wav_bytes: bytes) -> Dict[str, Any]:
     """
     Extract speaker_embedding from 5-30s clean WAV audio using Gnani Voice Clone Embeddings API.
     Returns: {"embedding": "...", "shape": [1, 768], "dtype": "torch.bfloat16"}
+    Uses deterministic SHA256 disk caching to prevent duplicate API credit burn.
     """
+    import hashlib
+    from backend.config import OUT_DIR
+
+    # Check embedding cache first (saves Gnani credits on sample voice & re-enrollment)
+    audio_hash = hashlib.sha256(wav_bytes).hexdigest()[:24]
+    emb_cache_file = OUT_DIR / f"emb_{audio_hash}.json"
+    if emb_cache_file.exists():
+        try:
+            cached_emb = json.loads(emb_cache_file.read_text(encoding="utf-8"))
+            if "embedding" in cached_emb and len(cached_emb["embedding"]) > 50:
+                logger.info(f"Voice Clone Embedding Cache Hit: {emb_cache_file.name}")
+                return cached_emb
+        except Exception as e:
+            logger.warning(f"Error reading embedding cache: {e}")
+
     if not GNANI_API_KEY or GNANI_API_KEY == "your_gnani_api_key_here":
         logger.warning("GNANI_API_KEY missing; generating mock embedding.")
         return {
@@ -138,14 +154,26 @@ def make_embedding(wav_bytes: bytes) -> Dict[str, Any]:
                 resp = requests.post(url, headers=get_auth_headers(), files=files, timeout=60)
             if resp.status_code == 200:
                 data = resp.json()
+                result = None
                 # Parse structure according to live OpenAPI docs
                 if "data" in data and "voice_clone_embedding" in data["data"]:
-                    return data["data"]["voice_clone_embedding"]
+                    result = data["data"]["voice_clone_embedding"]
                 elif "voice_clone_embedding" in data:
-                    return data["voice_clone_embedding"]
+                    result = data["voice_clone_embedding"]
                 elif "embedding" in data:
-                    return data
-                return data
+                    result = data
+                else:
+                    result = data
+
+                # Cache embedding to disk
+                if result and "embedding" in result:
+                    try:
+                        emb_cache_file.write_text(json.dumps(result), encoding="utf-8")
+                        logger.info(f"Cached voice clone embedding: {emb_cache_file.name}")
+                    except Exception as ce:
+                        logger.warning(f"Could not write embedding cache: {ce}")
+
+                return result
             logger.warning(f"Voice Clone Embedding attempt {attempt+1} failed: {resp.status_code} - {resp.text[:200]}")
             time.sleep(1.0)
         except Exception as e:
