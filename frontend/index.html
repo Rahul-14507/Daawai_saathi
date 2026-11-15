@@ -55,58 +55,241 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="/static/styles.css?v=2.3">
+  <link rel="stylesheet" href="/static/styles.css?v=2.4">
 </head>
-<body class="bg-[#FBFBFA] text-slate-800 font-sans min-h-screen flex flex-col pb-28">
+<body class="bg-[#FBFBFA] lg:bg-slate-950 text-slate-800 font-sans min-h-screen selection:bg-emerald-200">
 
-  <!-- Top App Navigation Header (Mobile-Optimized & Crisp) -->
-  <header class="bg-forest-900 text-white sticky top-0 z-30 shadow-md border-b border-forest-800">
-    <div class="max-w-xl mx-auto px-3.5 py-2.5 flex items-center justify-between gap-2">
-      <!-- Logo & Brand Crest -->
-      <div class="flex items-center space-x-2.5 min-w-0">
-        <div class="w-9 h-9 rounded-xl bg-forest-800 border border-emerald-500/30 flex items-center justify-center text-xl shadow-inner flex-shrink-0">
-          💊
-        </div>
-        <div class="min-w-0">
-          <div class="flex items-center space-x-1.5">
-            <h1 class="text-[15px] font-extrabold tracking-tight text-white leading-tight truncate">Dawai Saathi</h1>
-            <span class="bg-forest-800 text-emerald-300 text-[9px] font-bold px-1.5 py-0.5 rounded border border-forest-700/80 flex-shrink-0 uppercase tracking-wider">GNANI AI</span>
-          </div>
-          <p class="text-[10px] text-emerald-200/90 font-medium tracking-tight truncate">దవై साथी • Voice Medicine Companion</p>
-        </div>
-      </div>
-
-      <!-- Language Selector & PWA Install Button -->
-      <div class="flex items-center space-x-1.5 flex-shrink-0">
-        <!-- PWA Install Action Pill -->
-        <button id="btnInstallPWA" class="hidden bg-emerald-500 hover:bg-emerald-400 text-forest-950 text-[11px] font-bold px-2 py-1.5 rounded-xl shadow-sm transition flex items-center space-x-1 active:scale-95 flex-shrink-0" title="Install as Web App">
-          <span>📲</span>
-          <span class="hidden sm:inline">Install</span>
-        </button>
-
-        <div class="relative flex-shrink-0">
-          <select id="langSelect" class="bg-forest-800/95 hover:bg-forest-800 text-white text-xs font-bold rounded-xl pl-2.5 pr-7 py-1.5 border border-forest-700/80 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer shadow-sm appearance-none max-w-[125px] sm:max-w-none truncate">
-            <option value="te-IN" selected>🇮🇳 తెలుగు</option>
-            <option value="hi-IN">🇮🇳 हिन्दी</option>
-            <option value="ta-IN">🇮🇳 தமிழ்</option>
-            <option value="kn-IN">🇮🇳 ಕನ್ನಡ</option>
-            <option value="bn-IN">🇮🇳 বাংলা</option>
-            <option value="mr-IN">🇮🇳 मराठी</option>
-            <option value="gu-IN">🇮🇳 ગુજરાતી</option>
-            <option value="ml-IN">🇮🇳 മലയാളം</option>
-            <option value="pa-IN">🇮🇳 ਪੰਜਾਬੀ</option>
-            <option value="en-IN">🌐 English</option>
-          </select>
-          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-emerald-300 text-[10px]">
-            ▼
-          </div>
-        </div>
-      </div>
+  <!-- Tablet / Mid-screen Notice Banner (Hidden on Mobile < 640px and Desktop >= 1024px) -->
+  <div id="tabletNoticeBanner" class="bg-forest-900 text-white text-xs px-4 py-2.5 flex items-center justify-between border-b border-forest-800 shadow-sm hidden sm:flex lg:hidden sticky top-0 z-50">
+    <div class="flex items-center space-x-2">
+      <span class="text-base">📱</span>
+      <span><strong>Mobile-First PWA:</strong> Dawai Saathi is engineered for smartphones & rural touchscreens. Install it to your home screen or test on mobile for the intended experience.</span>
     </div>
-  </header>
+    <button onclick="document.getElementById('tabletNoticeBanner').remove()" class="text-emerald-300 hover:text-white ml-2 text-sm font-bold">✕</button>
+  </div>
 
-  <!-- Main Container -->
-  <main class="max-w-xl w-full mx-auto px-4 pt-4 flex-1">
+  <!-- Main Presentation Container (Split view on Desktop, Natural App on Mobile) -->
+  <div id="appWorkspace" class="min-h-screen w-full flex flex-col lg:flex-row lg:items-center lg:justify-center lg:p-6 xl:p-8 relative">
+
+    <!-- ============================================== -->
+    <!-- DESKTOP COMPANION PANE (Evaluator Guide & PWA Showcase) -->
+    <!-- ============================================== -->
+    <aside id="desktopGuidePane" class="hidden lg:flex flex-col justify-between w-[440px] xl:w-[480px] h-[860px] max-h-[94vh] bg-slate-900/90 backdrop-blur-2xl border border-emerald-500/20 rounded-[36px] p-6 shadow-2xl text-white mr-8 overflow-y-auto flex-shrink-0">
+      
+      <!-- Top Branding & View Switcher -->
+      <div>
+        <div class="flex items-center justify-between border-b border-slate-700/80 pb-4">
+          <div class="flex items-center space-x-3">
+            <div class="w-11 h-11 rounded-2xl bg-forest-800 border border-emerald-400/40 flex items-center justify-center text-2xl shadow-lg flex-shrink-0">
+              💊
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <h2 class="text-lg font-black text-white tracking-tight">Dawai Saathi</h2>
+                <span class="bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold px-2 py-0.5 rounded-full border border-emerald-500/30">GNANI AI</span>
+              </div>
+              <p class="text-xs text-emerald-300/80 font-medium">దవై साथी • Voice Medicine Companion</p>
+            </div>
+          </div>
+
+          <!-- View Toggle Button (Phone Mockup vs Expanded View) -->
+          <button id="btnToggleDesktopView" class="text-[11px] font-bold bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 px-3 py-1.5 rounded-xl border border-slate-600 transition flex items-center space-x-1.5 shadow-sm" title="Toggle Phone Simulator or Expanded View">
+            <span id="viewToggleIcon">🖥️</span>
+            <span id="viewToggleLabel">Expanded</span>
+          </button>
+        </div>
+
+        <!-- Mobile-First Architecture Notice -->
+        <div class="bg-forest-950/80 border border-emerald-500/30 rounded-2xl p-4 my-3.5 space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2 text-emerald-400 font-extrabold text-xs">
+              <span class="text-sm">📱</span>
+              <span class="uppercase tracking-wider">Engineered as a Mobile PWA</span>
+            </div>
+            <span class="text-[10px] bg-emerald-900/60 text-emerald-200 font-bold px-2 py-0.5 rounded-full border border-emerald-700/50">Rural UX</span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Dawai Saathi is purpose-built for rural Indian patients on smartphones who face low literacy and illegible doctor handwriting. You are interacting with the live mobile simulator.
+          </p>
+          <div class="grid grid-cols-2 gap-1.5 pt-1 text-[10px] text-slate-300">
+            <div class="flex items-center space-x-1 bg-slate-800/80 p-1.5 rounded-lg border border-slate-700/60">
+              <span class="text-emerald-400">✓</span>
+              <span>Installable PWA</span>
+            </div>
+            <div class="flex items-center space-x-1 bg-slate-800/80 p-1.5 rounded-lg border border-slate-700/60">
+              <span class="text-emerald-400">✓</span>
+              <span>1-Tap Voice Recording</span>
+            </div>
+            <div class="flex items-center space-x-1 bg-slate-800/80 p-1.5 rounded-lg border border-slate-700/60">
+              <span class="text-emerald-400">✓</span>
+              <span>Thumb-Reachable Nav</span>
+            </div>
+            <div class="flex items-center space-x-1 bg-slate-800/80 p-1.5 rounded-lg border border-slate-700/60">
+              <span class="text-emerald-400">✓</span>
+              <span>10+ Indic Languages</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live QR Code for Testing on Phone -->
+        <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 my-3 flex items-center space-x-4">
+          <div class="bg-white p-2 rounded-xl shadow-md flex-shrink-0">
+            <img src="/static/qr-mobile.png" alt="Scan QR Code to open on phone" class="w-24 h-24 rounded-lg block">
+          </div>
+          <div class="space-y-1.5 flex-1 min-w-0">
+            <span class="text-[11px] font-bold text-amber-300 uppercase tracking-wide flex items-center space-x-1">
+              <span>📲</span>
+              <span>Evaluate on Your Phone</span>
+            </span>
+            <p class="text-[11px] text-slate-300 leading-snug">
+              Scan with your phone camera to test native microphone, audio haptics & PWA install:
+            </p>
+            <div class="flex items-center space-x-2 pt-1">
+              <button id="btnCopyJudgeLink" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition flex items-center space-x-1 shadow-sm">
+                <span>📋</span>
+                <span id="copyLinkBtnText">Copy Mobile Link</span>
+              </button>
+              <span class="text-[10px] text-emerald-300 font-mono bg-emerald-950/90 px-2 py-1 rounded border border-emerald-800/60 truncate" title="Judge Evaluation Access Active">
+                ?judge=true
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Quick Actions for Judges -->
+        <div class="space-y-2 my-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">Evaluator Quick Actions</span>
+            <span class="text-[10px] text-emerald-400 font-bold bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-800/50">⚡ 1-Click Control</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="guideBtnSample" class="bg-slate-800/90 hover:bg-emerald-900/60 active:scale-95 text-slate-200 hover:text-white border border-slate-700 hover:border-emerald-500/50 rounded-xl p-2.5 text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm">
+              <span class="text-base">📄</span>
+              <span class="text-[11px] font-bold leading-tight">Sample Rx</span>
+            </button>
+            <button id="guideBtnQna" class="bg-slate-800/90 hover:bg-emerald-900/60 active:scale-95 text-slate-200 hover:text-white border border-slate-700 hover:border-emerald-500/50 rounded-xl p-2.5 text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm">
+              <span class="text-base">🎙️</span>
+              <span class="text-[11px] font-bold leading-tight">Voice Q&A</span>
+            </button>
+            <button id="guideBtnFamily" class="bg-slate-800/90 hover:bg-emerald-900/60 active:scale-95 text-slate-200 hover:text-white border border-slate-700 hover:border-emerald-500/50 rounded-xl p-2.5 text-center transition flex flex-col items-center justify-center space-y-1 shadow-sm">
+              <span class="text-base">🗣️</span>
+              <span class="text-[11px] font-bold leading-tight">Family Voice</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sovereign Indian AI Tech Stack Badges -->
+      <div class="border-t border-slate-700/80 pt-3 mt-auto">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Powered by Gnani AI & Gemini Vision</p>
+        <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+          <div class="bg-slate-800/60 rounded-xl p-2 border border-slate-700/60 flex items-center space-x-2">
+            <span class="text-emerald-400 text-xs">●</span>
+            <div class="min-w-0">
+              <div class="font-bold text-slate-200 text-[11px] truncate">Gnani Prisma v2.5</div>
+              <div class="text-[10px] text-slate-400 truncate">Indic Speech-to-Text</div>
+            </div>
+          </div>
+          <div class="bg-slate-800/60 rounded-xl p-2 border border-slate-700/60 flex items-center space-x-2">
+            <span class="text-emerald-400 text-xs">●</span>
+            <div class="min-w-0">
+              <div class="font-bold text-slate-200 text-[11px] truncate">Gnani Timbre v2.5</div>
+              <div class="text-[10px] text-slate-400 truncate">Regional Voice TTS</div>
+            </div>
+          </div>
+          <div class="bg-slate-800/60 rounded-xl p-2 border border-slate-700/60 flex items-center space-x-2">
+            <span class="text-emerald-400 text-xs">●</span>
+            <div class="min-w-0">
+              <div class="font-bold text-slate-200 text-[11px] truncate">Gnani Vachana VC</div>
+              <div class="text-[10px] text-slate-400 truncate">Cloned Voice Reminders</div>
+            </div>
+          </div>
+          <div class="bg-slate-800/60 rounded-xl p-2 border border-slate-700/60 flex items-center space-x-2">
+            <span class="text-emerald-400 text-xs">●</span>
+            <div class="min-w-0">
+              <div class="font-bold text-slate-200 text-[11px] truncate">Gemini 2.5 Flash</div>
+              <div class="text-[10px] text-slate-400 truncate">Doctor Handwriting OCR</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ============================================== -->
+    <!-- SMARTPHONE DEVICE SIMULATOR / APP CONTAINER -->
+    <!-- ============================================== -->
+    <div id="phoneMockupContainer" class="w-full lg:w-[420px] lg:h-[860px] lg:max-h-[94vh] flex flex-col relative transition-all duration-300">
+      
+      <!-- Phone Bezel & Hardware Shell (Active on Desktop) -->
+      <div id="phoneHardwareFrame" class="w-full h-full lg:bg-slate-900 lg:rounded-[52px] lg:p-[10px] lg:shadow-[0_25px_80px_rgba(0,0,0,0.8)] lg:border lg:border-slate-800 lg:ring-1 lg:ring-emerald-500/20 flex flex-col relative overflow-hidden">
+        
+        <!-- Phone Dynamic Island / Speaker Pill (Desktop only) -->
+        <div class="hidden lg:flex absolute top-3 left-1/2 -translate-x-1/2 z-50 items-center justify-center space-x-2 bg-black px-4 py-1.5 rounded-full shadow-inner border border-slate-800 pointer-events-none">
+          <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-700"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-950 border border-emerald-800"></div>
+        </div>
+
+        <!-- Phone Screen Glass Inner Container -->
+        <div id="phoneInnerScreen" class="w-full h-full bg-[#FBFBFA] lg:rounded-[42px] overflow-hidden flex flex-col relative">
+
+          <!-- Simulated Phone Status Bar (Desktop Only) -->
+          <div class="hidden lg:flex items-center justify-between px-6 pt-2.5 pb-1 bg-forest-900 text-emerald-200 text-[11px] font-bold select-none z-40">
+            <span id="statusBarClock">9:41 AM</span>
+            <div class="flex items-center space-x-1.5 text-[10px]">
+              <span>5G</span>
+              <span>📶</span>
+              <span>🔋 100%</span>
+            </div>
+          </div>
+
+          <!-- Top App Navigation Header (Mobile-Optimized & Crisp) -->
+          <header class="bg-forest-900 text-white sticky top-0 z-30 shadow-md border-b border-forest-800 flex-shrink-0">
+            <div class="max-w-xl mx-auto px-3.5 py-2.5 flex items-center justify-between gap-2">
+              <!-- Logo & Brand Crest -->
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-forest-800 border border-emerald-500/30 flex items-center justify-center text-xl shadow-inner flex-shrink-0">
+                  💊
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center space-x-1.5">
+                    <h1 class="text-[15px] font-extrabold tracking-tight text-white leading-tight truncate">Dawai Saathi</h1>
+                    <span class="bg-forest-800 text-emerald-300 text-[9px] font-bold px-1.5 py-0.5 rounded border border-forest-700/80 flex-shrink-0 uppercase tracking-wider">GNANI AI</span>
+                  </div>
+                  <p class="text-[10px] text-emerald-200/90 font-medium tracking-tight truncate">దవై साथी • Voice Medicine Companion</p>
+                </div>
+              </div>
+
+              <!-- Language Selector & PWA Install Button -->
+              <div class="flex items-center space-x-1.5 flex-shrink-0">
+                <!-- PWA Install Action Pill -->
+                <button id="btnInstallPWA" class="hidden bg-emerald-500 hover:bg-emerald-400 text-forest-950 text-[11px] font-bold px-2 py-1.5 rounded-xl shadow-sm transition flex items-center space-x-1 active:scale-95 flex-shrink-0" title="Install as Web App">
+                  <span>📲</span>
+                  <span class="hidden sm:inline">Install</span>
+                </button>
+
+                <div class="relative flex-shrink-0">
+                  <select id="langSelect" class="bg-forest-800/95 hover:bg-forest-800 text-white text-xs font-bold rounded-xl pl-2.5 pr-7 py-1.5 border border-forest-700/80 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer shadow-sm appearance-none max-w-[125px] sm:max-w-none truncate">
+                    <option value="te-IN" selected>🇮🇳 తెలుగు</option>
+                    <option value="hi-IN">🇮🇳 हिन्दी</option>
+                    <option value="ta-IN">🇮🇳 தமிழ்</option>
+                    <option value="kn-IN">🇮🇳 ಕನ್ನಡ</option>
+                    <option value="bn-IN">🇮🇳 বাংলা</option>
+                    <option value="mr-IN">🇮🇳 मराठी</option>
+                    <option value="gu-IN">🇮🇳 ગુજરાતી</option>
+                    <option value="ml-IN">🇮🇳 മലയാളം</option>
+                    <option value="pa-IN">🇮🇳 ਪੰਜਾਬੀ</option>
+                    <option value="en-IN">🌐 English</option>
+                  </select>
+                  <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-emerald-300 text-[10px]">
+                    ▼
+                  </div>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <!-- Main Scrollable Container -->
+          <main class="w-full px-4 pt-4 flex-1 lg:overflow-y-auto pb-28 lg:pb-24 scroll-smooth">
 
     <!-- Notification Toast -->
     <div id="toast" class="hidden mb-4 p-3.5 rounded-2xl text-xs font-semibold shadow-md transition-all flex items-center justify-between"></div>
@@ -527,7 +710,7 @@
   </main>
 
   <!-- Mobile Bottom Navigation Bar (Thumb Reachable & Native App Style) -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 border-t border-slate-200/80 shadow-2xl z-30 bottom-nav-safe">
+  <nav class="fixed lg:absolute bottom-0 left-0 right-0 bg-white/95 border-t border-slate-200/80 shadow-2xl lg:shadow-md z-30 bottom-nav-safe lg:rounded-b-[42px]">
     <div class="max-w-xl mx-auto grid grid-cols-3 text-center px-3 py-1.5 gap-1">
       <!-- Tab 1: Scan Rx -->
       <button id="tabScan" class="nav-tab active-tab flex flex-col items-center justify-center py-1.5 px-2 rounded-2xl transition">
@@ -562,7 +745,16 @@
     </div>
   </nav>
 
+          <!-- Home Indicator Swipe Bar (Desktop only) -->
+          <div class="hidden lg:block absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-slate-400/80 rounded-full z-40 pointer-events-none"></div>
+
+        </div> <!-- /phoneInnerScreen -->
+      </div> <!-- /phoneHardwareFrame -->
+    </div> <!-- /phoneMockupContainer -->
+
+  </div> <!-- /appWorkspace -->
+
   <!-- App Script with Cache Busting -->
-  <script src="/static/app.js?v=2.3"></script>
+  <script src="/static/app.js?v=2.4"></script>
 </body>
 </html>

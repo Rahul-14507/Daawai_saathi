@@ -74,6 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initScanControls();
   initQnaControls();
   initFamilyVoiceControls();
+  initDesktopSimulator();
   loadRecentPrescription();
   loadFamilyVoices();
 });
@@ -175,6 +176,8 @@ function initNavigation() {
         activeLabel.classList.remove("text-slate-500", "font-medium");
         activeLabel.classList.add("text-forest-900", "font-bold");
       }
+      const mainEl = document.querySelector("main");
+      if (mainEl) mainEl.scrollTo({ top: 0, behavior: "smooth" });
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   });
@@ -1236,5 +1239,110 @@ function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
   return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+}
+
+// ==========================================
+// Desktop Mobile Simulator & Evaluator Guide
+// ==========================================
+function initDesktopSimulator() {
+  // 1. Live status bar clock in mobile frame
+  function updateClock() {
+    const clockEl = document.getElementById("statusBarClock");
+    if (!clockEl) return;
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12;
+    clockEl.textContent = `${hours}:${minutes} ${ampm}`;
+  }
+  updateClock();
+  setInterval(updateClock, 30000);
+
+  // 2. Companion Evaluator Quick Triggers
+  const btnSample = document.getElementById("guideBtnSample");
+  if (btnSample) {
+    btnSample.addEventListener("click", () => {
+      const tabScan = document.getElementById("tabScan");
+      if (tabScan) tabScan.click();
+      const sampleBtn = document.getElementById("btnSampleRx");
+      if (sampleBtn) {
+        sampleBtn.click();
+        showToast("Triggered: Load Sample Prescription", "success");
+      }
+    });
+  }
+
+  const btnQna = document.getElementById("guideBtnQna");
+  if (btnQna) {
+    btnQna.addEventListener("click", () => {
+      const tabQna = document.getElementById("tabQna");
+      if (tabQna) {
+        tabQna.click();
+        showToast("Switched to Voice Q&A", "info");
+      }
+    });
+  }
+
+  const btnFamily = document.getElementById("guideBtnFamily");
+  if (btnFamily) {
+    btnFamily.addEventListener("click", () => {
+      const tabFamily = document.getElementById("tabFamily");
+      if (tabFamily) {
+        tabFamily.click();
+        showToast("Switched to Family Voice", "info");
+      }
+    });
+  }
+
+  // 3. Copy Judge Evaluation Link to Clipboard
+  const btnCopy = document.getElementById("btnCopyJudgeLink");
+  if (btnCopy) {
+    btnCopy.addEventListener("click", async () => {
+      const judgeUrl = `${window.location.origin}/?judge=true`;
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(judgeUrl);
+        } else {
+          // Fallback input copy
+          const tempInput = document.createElement("input");
+          tempInput.value = judgeUrl;
+          document.body.appendChild(tempInput);
+          tempInput.select();
+          document.execCommand("copy");
+          document.body.removeChild(tempInput);
+        }
+        const txt = document.getElementById("copyLinkBtnText");
+        if (txt) txt.textContent = "Copied! ✓";
+        showToast("Mobile evaluation link copied to clipboard!", "success");
+        setTimeout(() => {
+          if (txt) txt.textContent = "Copy Mobile Link";
+        }, 3000);
+      } catch (err) {
+        showToast("Link: " + judgeUrl, "info");
+      }
+    });
+  }
+
+  // 4. View Switcher: Phone Simulator vs Expanded Desktop View
+  const btnToggle = document.getElementById("btnToggleDesktopView");
+  if (btnToggle) {
+    btnToggle.addEventListener("click", () => {
+      const workspace = document.getElementById("appWorkspace");
+      if (!workspace) return;
+      const isExpanded = workspace.classList.toggle("desktop-expanded-view");
+      const icon = document.getElementById("viewToggleIcon");
+      const label = document.getElementById("viewToggleLabel");
+      if (isExpanded) {
+        if (icon) icon.textContent = "📱";
+        if (label) label.textContent = "Phone View";
+        showToast("Switched to Expanded View", "info");
+      } else {
+        if (icon) icon.textContent = "🖥️";
+        if (label) label.textContent = "Expanded";
+        showToast("Switched to Phone Simulator", "info");
+      }
+    });
+  }
 }
 

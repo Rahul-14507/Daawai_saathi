@@ -144,3 +144,48 @@ button:active, .touch-btn:active {
     display: none !important;
   }
 }
+
+/* ==========================================
+   Desktop Mobile Simulator & Companion Styles
+   ========================================== */
+@media (min-width: 1024px) {
+  /* Contained smooth scrolling inside the phone screen */
+  #phoneInnerScreen main {
+    scrollbar-width: thin;
+    scrollbar-color: #CBD5E1 transparent;
+  }
+  #phoneInnerScreen main::-webkit-scrollbar {
+    width: 5px;
+  }
+  #phoneInnerScreen main::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  #phoneInnerScreen main::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 9999px;
+  }
+  #phoneInnerScreen main::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+
+  /* Desktop Expanded View (When judge toggles expanded view) */
+  .desktop-expanded-view #desktopGuidePane {
+    display: none !important;
+  }
+  .desktop-expanded-view #phoneMockupContainer {
+    width: 100% !important;
+    max-width: 640px !important;
+    height: 94vh !important;
+    max-height: 94vh !important;
+  }
+  .desktop-expanded-view #phoneHardwareFrame {
+    border-radius: 2rem !important;
+    padding: 0 !important;
+    border: 1px solid #334155 !important;
+    background: #FFFFFF !important;
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4) !important;
+  }
+  .desktop-expanded-view #phoneInnerScreen {
+    border-radius: 2rem !important;
+  }
+}
