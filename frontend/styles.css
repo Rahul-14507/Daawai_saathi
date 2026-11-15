@@ -172,9 +172,13 @@ button:active, .touch-btn:active {
   .desktop-expanded-view #desktopGuidePane {
     display: none !important;
   }
+  .desktop-expanded-view #btnFloatingBackToPhone {
+    display: flex !important;
+    animation: fadeInDown 0.25s ease-out;
+  }
   .desktop-expanded-view #phoneMockupContainer {
     width: 100% !important;
-    max-width: 640px !important;
+    max-width: 680px !important;
     height: 94vh !important;
     max-height: 94vh !important;
   }
@@ -187,5 +191,15 @@ button:active, .touch-btn:active {
   }
   .desktop-expanded-view #phoneInnerScreen {
     border-radius: 2rem !important;
+  }
+  /* Hide simulated phone notch and status bar in expanded desktop view */
+  .desktop-expanded-view #phoneStatusBar,
+  .desktop-expanded-view #phoneNotch {
+    display: none !important;
+  }
+
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }

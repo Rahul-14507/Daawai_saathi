@@ -1325,24 +1325,39 @@ function initDesktopSimulator() {
   }
 
   // 4. View Switcher: Phone Simulator vs Expanded Desktop View
-  const btnToggle = document.getElementById("btnToggleDesktopView");
-  if (btnToggle) {
-    btnToggle.addEventListener("click", () => {
-      const workspace = document.getElementById("appWorkspace");
-      if (!workspace) return;
-      const isExpanded = workspace.classList.toggle("desktop-expanded-view");
-      const icon = document.getElementById("viewToggleIcon");
-      const label = document.getElementById("viewToggleLabel");
-      if (isExpanded) {
-        if (icon) icon.textContent = "📱";
-        if (label) label.textContent = "Phone View";
-        showToast("Switched to Expanded View", "info");
-      } else {
-        if (icon) icon.textContent = "🖥️";
-        if (label) label.textContent = "Expanded";
-        showToast("Switched to Phone Simulator", "info");
-      }
-    });
+  function toggleDesktopView(forceState = null) {
+    const workspace = document.getElementById("appWorkspace");
+    if (!workspace) return;
+
+    let isExpanded;
+    if (forceState !== null) {
+      isExpanded = forceState;
+      workspace.classList.toggle("desktop-expanded-view", isExpanded);
+      document.body.classList.toggle("desktop-expanded-view", isExpanded);
+    } else {
+      isExpanded = workspace.classList.toggle("desktop-expanded-view");
+      document.body.classList.toggle("desktop-expanded-view", isExpanded);
+    }
+
+    // Sync sidebar toggle icon and label
+    const icon = document.getElementById("viewToggleIcon");
+    const label = document.getElementById("viewToggleLabel");
+
+    if (isExpanded) {
+      if (icon) icon.textContent = "📱";
+      if (label) label.textContent = "Phone View";
+      showToast("Expanded View active. Click 'Back to Phone View' to restore.", "info");
+    } else {
+      if (icon) icon.textContent = "🖥️";
+      if (label) label.textContent = "Expanded";
+      showToast("Returned to Phone Simulator", "info");
+    }
   }
+
+  const btnToggle = document.getElementById("btnToggleDesktopView");
+  if (btnToggle) btnToggle.addEventListener("click", () => toggleDesktopView());
+
+  const btnFloatingBack = document.getElementById("btnFloatingBackToPhone");
+  if (btnFloatingBack) btnFloatingBack.addEventListener("click", () => toggleDesktopView(false));
 }
 
